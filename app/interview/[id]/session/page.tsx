@@ -139,11 +139,25 @@ export default function InterviewSession() {
       connection.on(LiveTranscriptionEvents.Transcript, (data: any) => {
         const transcript = data.channel?.alternatives?.[0]?.transcript || '';
         if (!transcript) return;
-        if (data.is_final) {
+        
+        const isFinal = data.is_final || false;
+        
+        if (isFinal) {
+          // Final transcript - save it
           liveFinalRef.current = transcript;
+          setLiveText(transcript);
+          console.log('Final transcript received:', transcript);
+          // Wait a bit then auto-submit
+          setTimeout(() => {
+            if (streaming) {
+              stopLiveAnswer(true);
+            }
+          }, 1500);
+        } else {
+          // Interim transcript - show live
+          setLiveText(transcript);
+          resetSilenceTimer();
         }
-        setLiveText(transcript);
-        resetSilenceTimer();
       });
 
       connection.on(LiveTranscriptionEvents.Error, (err: any) => {
@@ -173,6 +187,14 @@ export default function InterviewSession() {
   };
 
   const stopLiveAnswer = (send: boolean = true) => {
+    if (!streaming) return; // Already stopped
+    
+    // Clear silence timer
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+    
     mediaRecorderRef.current?.stop();
     mediaRecorderRef.current = null;
     micStreamRef.current?.getTracks().forEach((t) => t.stop());
@@ -182,26 +204,54 @@ export default function InterviewSession() {
       deepgramConnRef.current = null;
     }
     setStreaming(false);
-    setInfo('Cevap analiz ediliyor...');
+    
     const transcriptToSend = liveFinalRef.current || liveText;
-    if (send && transcriptToSend) {
-      sendAnswer(transcriptToSend);
+    console.log('Stopping live answer, transcript:', transcriptToSend, 'send:', send);
+    
+    if (send && transcriptToSend && transcriptToSend.trim().length > 0) {
+      setInfo('Cevap analiz ediliyor...');
+      sendAnswer(transcriptToSend.trim());
+    } else if (send) {
+      setInfo('Cevap alınamadı, tekrar dinleniyor...');
+      // Restart listening if no answer was captured
+      setTimeout(() => {
+        if (!streaming) {
+          startLiveAnswer();
+        }
+      }, 1000);
     }
   };
 
   const resetSilenceTimer = () => {
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     silenceTimerRef.current = setTimeout(() => {
-      if (liveFinalRef.current || liveText) {
+      // If we have any transcript (final or interim), submit it
+      const transcriptToSubmit = liveFinalRef.current || liveText;
+      if (transcriptToSubmit && transcriptToSubmit.trim().length > 0 && streaming) {
+        console.log('Silence detected, submitting:', transcriptToSubmit);
         stopLiveAnswer(true);
       }
-    }, 2500); // stop after ~2.5s of silence after speech
+    }, 3000); // stop after ~3s of silence after speech
   };
 
   const sendAnswer = async (answer: string) => {
-    if (!currentQuestion) return;
+    if (!currentQuestion || !answer || answer.trim().length === 0) {
+      console.log('Cannot send answer - missing question or answer');
+      setInfo('Cevap alınamadı, tekrar dinleniyor...');
+      setTimeout(() => {
+        if (!streaming) {
+          startLiveAnswer();
+        }
+      }, 1000);
+      return;
+    }
+    
+    console.log('Sending answer:', answer, 'for question:', currentQuestion);
     setLoading(true);
     setError(null);
+    setLiveText(''); // Clear live text
+    liveFinalRef.current = ''; // Clear final ref
+    
     try {
       const res = await fetch('/api/interview/respond', {
         method: 'POST',
@@ -209,23 +259,45 @@ export default function InterviewSession() {
         body: JSON.stringify({
           interviewId,
           question: currentQuestion,
-          answer,
+          answer: answer.trim(),
         }),
       });
+      
       const data = await res.json();
-      if (!res.ok || !data.nextQuestion) {
-        throw new Error(data.error || 'Yanıt işlenemedi');
+      console.log('Response from server:', data);
+      
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || data.message || 'Yanıt işlenemedi');
       }
 
-      setTurns((prev) => [...prev, { question: currentQuestion, answer }]);
+      if (!data.nextQuestion) {
+        throw new Error('Sonraki soru alınamadı');
+      }
+
+      // Save the turn
+      setTurns((prev) => [...prev, { question: currentQuestion, answer: answer.trim() }]);
+      
+      // Update to next question
       setCurrentQuestion(data.nextQuestion);
       setAiCaption(data.nextQuestion);
       setInfo('Yeni soru oynatılıyor...');
+      
+      // Play thank you message and next question
       await playQuestionAudio(`Thank you for your answer. Here is the next question.`);
       await playQuestionAudio(data.nextQuestion);
+      
+      // Restart listening for next answer
       await startLiveAnswer();
     } catch (err: any) {
+      console.error('Error sending answer:', err);
       setError(err.message || 'Yanıt gönderme hatası');
+      setInfo('Hata oluştu, tekrar dinleniyor...');
+      // Try to restart listening after error
+      setTimeout(() => {
+        if (!streaming) {
+          startLiveAnswer();
+        }
+      }, 2000);
     } finally {
       setLoading(false);
     }

@@ -7,6 +7,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        // CSS'teki yeni isimle EŞLEŞTİRİN
+        concretica: ['SK Concretica Custom', 'system-ui', 'sans-serif'], 
+      },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
@@ -16,4 +20,3 @@ module.exports = {
   },
   plugins: [],
 }
-

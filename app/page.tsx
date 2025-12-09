@@ -1,169 +1,123 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 
 export default function Home() {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-400 via-teal-300 to-blue-200">
       {/* Header */}
-      <header className="container mx-auto px-6 py-8">
+      <header className="container mx-auto px-6 py-6">
         <nav className="flex items-center justify-between">
-          <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            AI Interview Platform
+          {/* Logo and Brand Name */}
+          <div className="flex items-center gap-3">
+            {/* Hexagon Logo */}
+            <div className="w-10 h-10 bg-white/90 rounded-lg flex items-center justify-center shadow-md transform rotate-45">
+              <div className="w-6 h-6 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-sm transform -rotate-45"></div>
+            </div>
+            <span className="text-2xl font-extralight tracking-wide text-white" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+              Intervai
+            </span>
           </div>
-          <div className="flex gap-4">
+
+          {/* Navigation Links */}
+          <div className="flex items-center gap-12">
             <Link 
-              href="/interviews" 
-              className="text-gray-600 hover:text-gray-900 transition-colors"
+              href="#" 
+              className="text-white/90 hover:text-white text-sm font-light tracking-wide transition-colors"
+              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
             >
-              My Interviews
+              About
             </Link>
+            <Link 
+              href="#" 
+              className="text-white/90 hover:text-white text-sm font-light tracking-wide transition-colors"
+              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+            >
+              FAQ
+            </Link>
+            <button className="px-6 py-2 bg-white rounded-full text-sm font-medium text-cyan-600 shadow-md hover:shadow-lg transition-all duration-200">
+              Sign In / Up
+            </button>
           </div>
         </nav>
       </header>
 
-      {/* Hero Section */}
+      {/* Main Content */}
       <main className="container mx-auto px-6 py-16">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Main Heading */}
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Master Your Next Interview
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-gray-700 mb-12 leading-relaxed">
-            Practice with AI-powered interviews. Get real-time feedback and improve your skills.
-          </p>
+        <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[70vh]">
+          {/* Left Side - Branding */}
+          <div className="flex flex-col items-start space-y-8">
+            {/* Large Logo */}
 
-          {/* Start Interview Button */}
-          <div className="mb-16">
+            <h1 className="text-7xl font-extralight tracking-tight text-white **font-concretica**">
+              intervai
+            </h1>
+                        
+            {/* Tagline */}
+            <p className="text-2xl font-light text-white/90 leading-relaxed **font-concretica**">
+              Stress-free simulations. Real-world impact.
+            </p>
+            {/* Start Interview Button */}
             <Link href="/interview/create">
-              <button
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
-              >
-                <span className="relative z-10 flex items-center gap-2">
-                  Start Interview
-                  <svg 
-                    className={`w-5 h-5 transition-transform duration-300 ${isHovered ? 'translate-x-1' : ''}`}
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <button className="px-10 py-4 bg-white rounded-full text-lg font-medium text-cyan-600 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                Start Interview
               </button>
             </Link>
           </div>
 
-          {/* Project Aims Section */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8 md:p-12 mb-12">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8">Project Aims</h2>
-            <div className="grid md:grid-cols-2 gap-6 text-left">
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
-                <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          {/* Right Side - Chat Bubbles */}
+          <div className="relative flex flex-col items-end space-y-6">
+            {/* Chat Bubble 1 - Female Avatar */}
+            <div className="relative w-80 bg-white/95 rounded-3xl rounded-tr-sm p-5 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-300 to-pink-400 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">AI-Powered Practice</h3>
-                <p className="text-gray-600">
-                  Practice interviews with AI that generates relevant questions based on your target role and experience level.
-                </p>
-              </div>
-
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200">
-                <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                  </svg>
+                <div className="flex-1">
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    Hello. I’ll be guiding you through this interview today. Let’s begin.
+                  </p>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Real-Time Speech Recognition</h3>
-                <p className="text-gray-600">
-                  Advanced speech-to-text technology captures your responses in real-time for accurate analysis.
-                </p>
-              </div>
-
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-pink-50 to-pink-100 border border-pink-200">
-                <div className="w-12 h-12 bg-pink-600 rounded-xl flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Comprehensive Feedback</h3>
-                <p className="text-gray-600">
-                  Receive detailed AI-generated feedback on your performance, including strengths and areas for improvement.
-                </p>
-              </div>
-
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200">
-                <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Personalized Experience</h3>
-                <p className="text-gray-600">
-                  Customize interview difficulty, duration, and job-specific questions to match your career goals.
-                </p>
               </div>
             </div>
-          </div>
 
-          {/* Features Section */}
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Key Features</h2>
-            <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Multiple difficulty levels</span>
+            {/* Chat Bubble 2 - Female Avatar */}
+            <div className="relative w-80 bg-white/95 rounded-3xl rounded-tr-sm p-5 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ml-12">
+              <div className="flex items-start gap-4">
+
+                <div className="flex-1">
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    Thank you for the introduction. I’m prepared to start.
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-300 to-purple-400 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Job-specific questions</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Real-time transcription</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>AI-generated feedback</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Interview history</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Performance tracking</span>
+            </div>
+
+            {/* Chat Bubble 3 - Male Avatar */}
+            <div className="relative w-80 bg-white/95 rounded-3xl rounded-tr-sm p-5 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-300 to-pink-400 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    Great. Let’s begin with the first question: Could you tell me a little about yourself?
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="container mx-auto px-6 py-8 text-center text-gray-600">
-        <p>© 2024 AI Interview Platform. Built with Next.js and AI.</p>
-      </footer>
     </div>
   );
 }
