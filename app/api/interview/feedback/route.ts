@@ -54,6 +54,32 @@ export async function POST(request: NextRequest) {
 
     logger.info('Interview feedback generated', { interviewId });
 
+    // If interview has a userId (not demo), save feedback to user profile
+    if (interview.userId && !interview.userId.startsWith('demo_')) {
+      try {
+        const { UserProfileModel } = await import('@/models/user');
+        const feedbackData = {
+          interviewId,
+          jobTitle: interview.jobTitle,
+          difficulty: interview.difficulty,
+          completedAt: new Date(),
+          feedback: {
+            ...feedback,
+            generatedAt: new Date(),
+          },
+        };
+        await UserProfileModel.addFeedback(interview.userId, feedbackData);
+        logger.info('Feedback saved to user profile', { userId: interview.userId, interviewId });
+      } catch (profileError: any) {
+        // Log error but don't fail the request
+        logger.error('Error saving feedback to user profile', { 
+          error: profileError.message,
+          userId: interview.userId,
+          interviewId 
+        });
+      }
+    }
+
     return NextResponse.json({
       success: true,
       interviewId,

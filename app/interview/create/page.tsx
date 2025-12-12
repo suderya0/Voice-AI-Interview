@@ -1,36 +1,69 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function CreateInterview() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, loading: authLoading } = useAuth();
+  const isDemo = searchParams.get('demo') === 'true';
+  
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    userId: '',
     jobTitle: '',
     jobDescription: '',
     difficulty: 'Beginner',
     duration: 30,
   });
 
+  useEffect(() => {
+    // If not demo and user is not logged in, redirect to sign in
+    if (!isDemo && !authLoading && !user) {
+      router.push('/auth/sign-in?redirect=/interview/create');
+    }
+  }, [isDemo, authLoading, user, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      const requestBody: any = {
+        ...formData,
+        isDemo: isDemo || false,
+      };
+
+      // Only include userId if user is logged in and not demo
+      if (!isDemo && user) {
+        requestBody.userId = user.uid;
+      }
+
       const response = await fetch('/api/interview/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        router.push(`/interview/${data.interviewId}`);
+        // For demo interviews, store data in sessionStorage and go directly to session
+        if (isDemo || data.isDemo) {
+          sessionStorage.setItem('demoInterview', JSON.stringify({
+            interviewId: data.interviewId,
+            jobTitle: formData.jobTitle,
+            jobDescription: formData.jobDescription,
+            difficulty: formData.difficulty,
+            duration: formData.duration,
+          }));
+          router.push(`/interview/${data.interviewId}/session`);
+        } else {
+          router.push(`/interview/${data.interviewId}`);
+        }
       } else {
         alert('Failed to create interview: ' + data.error);
       }
@@ -51,24 +84,26 @@ export default function CreateInterview() {
 
           {/* Form Section */}
           <div className="bg-white/95 rounded-3xl shadow-xl p-8 md:p-12">
-            <h1 className="text-3xl font-extralight text-gray-800 mb-2 font-concretica">Create New Interview</h1>
-            <p className="text-gray-600 mb-8">Fill in the details to start your practice interview</p>
+            <h1 className="text-3xl font-extralight text-gray-800 mb-2 font-concretica">
+              {isDemo ? 'Try Demonstration' : 'Create New Interview'}
+            </h1>
+            <p className="text-gray-600 mb-8">
+              {isDemo 
+                ? 'Try out our AI interview platform. This demo won\'t be saved.'
+                : 'Fill in the details to start your practice interview'}
+            </p>
+
+            {isDemo && (
+              <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3 text-sm flex items-start gap-3">
+                <span className="mt-0.5 h-2 w-2 rounded-full bg-amber-500 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold">Demo Mode</p>
+                  <p>This interview is for demonstration purposes only. Sign in to save your interviews and receive feedback.</p>
+                </div>
+              </div>
+            )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="userId" className="block text-sm font-medium text-gray-700 mb-2">
-                User ID
-              </label>
-              <input
-                type="text"
-                id="userId"
-                required
-                value={formData.userId}
-                onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition"
-                placeholder="Enter your user ID"
-              />
-            </div>
 
             <div>
               <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700 mb-2">

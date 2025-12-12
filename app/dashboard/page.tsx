@@ -1,0 +1,317 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import { UserProfile, InterviewFeedback } from '@/models/user';
+
+export default function Dashboard() {
+  const router = useRouter();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [interviews, setInterviews] = useState<any[]>([]);
+  const [interviewsLoading, setInterviewsLoading] = useState(true);
+
+  useEffect(() => {
+    // Only redirect if auth is loaded and user is not authenticated
+    // Don't redirect during sign out process
+    if (!authLoading && !user && window.location.pathname === '/dashboard') {
+      router.push('/');
+    }
+  }, [authLoading, user, router]);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+      fetchInterviews();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch(`/api/user/profile?userId=${user.uid}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setProfile(data.profile);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchInterviews = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch(`/api/interview/list?userId=${user.uid}&status=completed`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setInterviews(data.interviews || []);
+      }
+    } catch (error) {
+      console.error('Error fetching interviews:', error);
+    } finally {
+      setInterviewsLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push('/');
+      router.refresh(); // Refresh to ensure home page shows correctly
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white">
+      {/* Header */}
+      <header className="bg-white/30 backdrop-blur-sm border-b border-white/20">
+        <div className="container mx-auto px-6 py-4">
+          <nav className="flex items-center justify-between">
+            {/* Logo and Brand Name */}
+            <div className="flex items-center gap-3">
+              <img 
+                src="/images/logo.png" 
+                alt="Intervai Logo" 
+                width={48} 
+                height={48} 
+              />
+              <span className="text-2xl font-extralight tracking-wide text-white font-concretica">
+                intervai
+              </span>
+            </div>
+
+            {/* User Menu */}
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <p className="text-white text-sm font-medium">{profile?.name || user.email}</p>
+                  <p className="text-white/80 text-xs">{user.email}</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-semibold">
+                  {(profile?.name || user.email || 'U')[0].toUpperCase()}
+                </div>
+              </div>
+              <button
+                onClick={handleSignOut}
+                className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-full text-sm transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          </nav>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-6 py-12">
+        {/* Welcome Section */}
+        <div className="mb-12">
+          <h1 className="text-4xl font-extralight text-white mb-2 font-concretica">
+            Welcome back, {profile?.name || user.email?.split('@')[0]}!
+          </h1>
+          <p className="text-white/90 text-lg">
+            Ready to practice your interview skills?
+          </p>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid md:grid-cols-2 gap-6 mb-12">
+          {/* Create Interview Card */}
+          <Link href="/interview/create">
+            <div className="bg-white/95 rounded-3xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-2xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-extralight text-gray-800 font-concretica">Create Interview</h2>
+                  <p className="text-gray-600 text-sm">Start a new practice session</p>
+                </div>
+              </div>
+              <p className="text-gray-700 mt-4">
+                Create a customized interview session tailored to your job role and difficulty level.
+              </p>
+            </div>
+          </Link>
+
+          {/* Profile Stats Card */}
+          <div className="bg-white/95 rounded-3xl shadow-xl p-8">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-2xl font-extralight text-gray-800 font-concretica">Your Stats</h2>
+                <p className="text-gray-600 text-sm">Interview performance</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              <div className="text-center p-4 bg-gray-50 rounded-xl">
+                <p className="text-3xl font-bold text-cyan-600">{profile?.feedbacks?.length || 0}</p>
+                <p className="text-sm text-gray-600 mt-1">Interviews</p>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-xl">
+                <p className="text-3xl font-bold text-purple-600">
+                  {profile?.feedbacks && profile.feedbacks.length > 0
+                    ? Math.round(
+                        profile.feedbacks.reduce((sum, f) => sum + f.feedback.overallScore, 0) /
+                          profile.feedbacks.length
+                      )
+                    : 0}
+                </p>
+                <p className="text-sm text-gray-600 mt-1">Avg Score</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Interviews & Feedbacks */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Recent Interviews */}
+          <div className="bg-white/95 rounded-3xl shadow-xl p-8">
+            <h2 className="text-2xl font-extralight text-gray-800 mb-6 font-concretica">Recent Interviews</h2>
+            {interviewsLoading ? (
+              <div className="text-gray-500 text-center py-8">Loading...</div>
+            ) : interviews.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">No interviews yet</p>
+                <Link href="/interview/create">
+                  <button className="px-6 py-2 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition-colors">
+                    Create Your First Interview
+                  </button>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {interviews.slice(0, 5).map((interview) => (
+                  <Link key={interview.id} href={`/interview/${interview.id}`}>
+                    <div className="border border-gray-200 rounded-xl p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-800 mb-1">{interview.jobTitle}</h3>
+                          <p className="text-sm text-gray-600">
+                            {new Date(interview.createdAt).toLocaleDateString()}
+                          </p>
+                          {interview.feedback && (
+                            <div className="mt-2 flex items-center gap-2">
+                              <span className="text-xs font-semibold text-gray-600">Score:</span>
+                              <span className="text-sm font-bold text-cyan-600">
+                                {interview.feedback.overallScore}/100
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          interview.status === 'completed' 
+                            ? 'bg-green-100 text-green-700'
+                            : interview.status === 'in_progress'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {interview.status}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Feedbacks */}
+          <div className="bg-white/95 rounded-3xl shadow-xl p-8">
+            <h2 className="text-2xl font-extralight text-gray-800 mb-6 font-concretica">Your Feedbacks</h2>
+            {loading ? (
+              <div className="text-gray-500 text-center py-8">Loading...</div>
+            ) : !profile?.feedbacks || profile.feedbacks.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">No feedbacks yet</p>
+                <p className="text-sm text-gray-600">
+                  Complete an interview to receive detailed feedback on your performance.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4 max-h-[600px] overflow-y-auto">
+                {profile.feedbacks.map((feedback, idx) => (
+                  <div key={idx} className="border border-gray-200 rounded-xl p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="font-semibold text-gray-800">{feedback.jobTitle}</h3>
+                        <p className="text-xs text-gray-600 mt-1">
+                          {new Date(feedback.completedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-cyan-600">
+                          {feedback.feedback.overallScore}
+                        </p>
+                        <p className="text-xs text-gray-600">/100</p>
+                      </div>
+                    </div>
+                    
+                    {feedback.feedback.strengths && feedback.feedback.strengths.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-xs font-semibold text-green-700 mb-1">Strengths</p>
+                        <ul className="text-xs text-gray-700 space-y-1">
+                          {feedback.feedback.strengths.slice(0, 2).map((strength, i) => (
+                            <li key={i} className="flex items-start gap-1">
+                              <span className="text-green-600 mt-0.5">•</span>
+                              <span>{strength}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {feedback.feedback.weaknesses && feedback.feedback.weaknesses.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-amber-700 mb-1">Areas to Improve</p>
+                        <ul className="text-xs text-gray-700 space-y-1">
+                          {feedback.feedback.weaknesses.slice(0, 2).map((weakness, i) => (
+                            <li key={i} className="flex items-start gap-1">
+                              <span className="text-amber-600 mt-0.5">•</span>
+                              <span>{weakness}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+

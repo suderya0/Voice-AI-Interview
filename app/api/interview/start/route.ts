@@ -11,7 +11,7 @@ import { logger } from '@/utils/logger';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { interviewId } = body;
+    const { interviewId, demoData } = body;
 
     if (!interviewId) {
       return NextResponse.json(
@@ -20,14 +20,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch interview from database
-    const interview = await InterviewModel.findById(interviewId);
+    // Check if this is a demo interview
+    const isDemo = interviewId.startsWith('demo_');
+    
+    // For demo interviews, create a temporary interview object
+    let interview: any;
+    if (isDemo) {
+      // Demo interviews don't exist in database, use provided demo data or defaults
+      interview = {
+        id: interviewId,
+        userId: null,
+        jobTitle: demoData?.jobTitle || 'Demo Interview',
+        jobDescription: demoData?.jobDescription || '',
+        difficulty: demoData?.difficulty || 'medium',
+        status: 'created',
+      };
+    } else {
+      // Fetch interview from database
+      interview = await InterviewModel.findById(interviewId);
 
-    if (!interview) {
-      return NextResponse.json(
-        { error: 'Interview not found' },
-        { status: 404 }
-      );
+      if (!interview) {
+        return NextResponse.json(
+          { error: 'Interview not found' },
+          { status: 404 }
+        );
+      }
     }
 
     // If already in progress, return current question without failing
@@ -57,15 +74,17 @@ export async function POST(request: NextRequest) {
       interview.difficulty
     );
 
-    // Update interview status
-    await InterviewModel.update(interviewId, {
-      status: 'in_progress',
-      startedAt: new Date(),
-      currentQuestion: initialQuestion,
-      updatedAt: new Date(),
-    });
+    // Update interview status (skip for demo interviews)
+    if (!isDemo) {
+      await InterviewModel.update(interviewId, {
+        status: 'in_progress',
+        startedAt: new Date(),
+        currentQuestion: initialQuestion,
+        updatedAt: new Date(),
+      });
+    }
 
-    logger.info('Interview started', { interviewId });
+    logger.info('Interview started', { interviewId, isDemo });
 
     // Return WebSocket connection details for real-time STT
     return NextResponse.json({

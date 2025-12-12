@@ -35,8 +35,36 @@ export default function InterviewDetail() {
   const fetchInterview = async () => {
     try {
       setLoading(true);
-      // For now, we'll need to fetch from the list endpoint or create a get endpoint
-      // Since we don't have a GET /api/interview/[id] endpoint, let's create one
+      
+      // Check if this is a demo interview
+      const isDemo = interviewId.startsWith('demo_');
+      
+      if (isDemo) {
+        // For demo interviews, check sessionStorage
+        const demoData = sessionStorage.getItem('demoInterview');
+        if (demoData) {
+          const demo = JSON.parse(demoData);
+          if (demo.interviewId === interviewId) {
+            setInterview({
+              id: demo.interviewId,
+              userId: '',
+              jobTitle: demo.jobTitle,
+              jobDescription: demo.jobDescription,
+              difficulty: demo.difficulty,
+              duration: demo.duration,
+              status: 'created',
+              createdAt: new Date().toISOString(),
+            });
+            setLoading(false);
+            return;
+          }
+        }
+        // If demo data not found, redirect to session directly
+        router.push(`/interview/${interviewId}/session`);
+        return;
+      }
+      
+      // For real interviews, fetch from API
       const response = await fetch(`/api/interview/${interviewId}`);
       
       if (!response.ok) {

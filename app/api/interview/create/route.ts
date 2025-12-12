@@ -5,13 +5,39 @@ import { logger } from '@/utils/logger';
 /**
  * POST /api/interview/create
  * Creates a new interview session
+ * Supports demo mode (isDemo: true) - doesn't require userId and doesn't save to database
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, jobTitle, jobDescription, difficulty, duration } = body;
+    const { userId, jobTitle, jobDescription, difficulty, duration, isDemo } = body;
 
-    // Validate required fields
+    // Demo mode: create interview without saving to database
+    if (isDemo === true) {
+      // Generate a temporary ID for demo purposes
+      const demoInterviewId = `demo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      logger.info('Demo interview created', { demoInterviewId });
+
+      return NextResponse.json({
+        success: true,
+        interviewId: demoInterviewId,
+        isDemo: true,
+        interview: {
+          id: demoInterviewId,
+          userId: null,
+          jobTitle: jobTitle || 'Demo Interview',
+          jobDescription: jobDescription || '',
+          difficulty: difficulty || 'medium',
+          duration: duration || 30,
+          status: 'created',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+    }
+
+    // Real interview: requires userId and saves to database
     if (!userId || !jobTitle) {
       return NextResponse.json(
         { error: 'Missing required fields: userId and jobTitle' },
@@ -42,6 +68,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       interviewId,
+      isDemo: false,
       interview: {
         ...interview,
         id: interviewId,

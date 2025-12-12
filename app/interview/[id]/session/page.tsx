@@ -95,15 +95,59 @@ export default function InterviewSession() {
   const initialize = async () => {
     setLoading(true);
     setError(null);
+    
+    // Check if this is a demo interview
+    const isDemo = interviewId.startsWith('demo_');
+    
+    // For demo interviews, get data from sessionStorage
+    let demoData = null;
+    if (isDemo) {
+      const stored = sessionStorage.getItem('demoInterview');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.interviewId === interviewId) {
+          demoData = {
+            jobTitle: parsed.jobTitle,
+            jobDescription: parsed.jobDescription,
+            difficulty: parsed.difficulty,
+          };
+        }
+      }
+    }
+    
     try {
       const response = await fetch('/api/interview/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ interviewId }),
+        body: JSON.stringify({ 
+          interviewId,
+          ...(isDemo && demoData ? { demoData } : {})
+        }),
       });
 
       const data = await response.json();
       if (!response.ok || !data.success) {
+        // For demo interviews, don't fail - just use the question
+        if (isDemo && data.question) {
+          setCurrentQuestion(data.question);
+          setAiCaption(data.question);
+          if (data.deepgramApiKey) {
+            deepgramKeyRef.current = data.deepgramApiKey;
+          }
+          setInfo('Görüşme başlıyor...');
+          await playSequence(['Hello, the interview is starting.', data.question], () => {
+            console.log('🎵 All audio finished, starting microphone...');
+            setTimeout(() => {
+              if (!isStartingRef.current && !isStreamingRef.current && !streaming) {
+                startLiveAnswer();
+              } else {
+                console.log('⚠️ Skipping startLiveAnswer - already active');
+              }
+            }, 100);
+          });
+          setLoading(false);
+          return;
+        }
         // If interview already in progress, fall back to fetching interview and proceed
         throw new Error(data.error || data.message || 'Interview start failed');
       }
@@ -130,7 +174,14 @@ export default function InterviewSession() {
         }, 100);
       });
     } catch (err: any) {
-      // Try to recover if already in progress
+      // For demo interviews, don't try to fetch from database
+      if (isDemo) {
+        setError('Demo interview initialization failed. Please try creating a new demo interview.');
+        setLoading(false);
+        return;
+      }
+      
+      // Try to recover if already in progress (only for real interviews)
       const fallback = await fetch(`/api/interview/${interviewId}`);
       if (fallback.ok) {
         const data = await fallback.json();
@@ -682,6 +733,18 @@ export default function InterviewSession() {
     setLiveText(''); // Clear live text
     liveFinalRef.current = ''; // Clear final ref
     
+    // For demo interviews, get job title from sessionStorage
+    let demoJobTitle = null;
+    if (interviewId.startsWith('demo_')) {
+      const stored = sessionStorage.getItem('demoInterview');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.interviewId === interviewId) {
+          demoJobTitle = parsed.jobTitle;
+        }
+      }
+    }
+    
     try {
       const res = await fetch('/api/interview/respond', {
         method: 'POST',
@@ -690,6 +753,7 @@ export default function InterviewSession() {
           interviewId,
           question: currentQuestion,
           answer: answer.trim(),
+          ...(demoJobTitle ? { demoJobTitle } : {}),
         }),
       });
       
@@ -780,7 +844,7 @@ export default function InterviewSession() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-10 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-400 white-700 py-10 px-4">
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <Link
@@ -794,8 +858,11 @@ export default function InterviewSession() {
 
         <div className="grid md:grid-cols-2 gap-4">
           {/* User column */}
-          <div className="bg-white rounded-3xl shadow-lg p-6 space-y-4">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-lg p-6 space-y-4 border border-white/40">
             <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white font-semibold flex items-center justify-center">
+                U
+              </div>
               <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">
                 Kullanıcı
               </span>
@@ -827,8 +894,11 @@ export default function InterviewSession() {
           </div>
 
           {/* AI column */}
-          <div className="bg-white rounded-3xl shadow-lg p-6 space-y-4">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-lg p-6 space-y-4 border border-white/40">
             <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-700 text-white font-semibold flex items-center justify-center">
+                AI
+              </div>
               <span className="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">
                 AI
               </span>

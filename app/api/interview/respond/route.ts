@@ -19,33 +19,56 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const interview = await InterviewModel.findById(interviewId);
+    // Check if this is a demo interview
+    const isDemo = interviewId.startsWith('demo_');
+    
+    let interview: any;
+    if (isDemo) {
+      // Demo interviews don't exist in database, create a temporary object
+      // Use demoJobTitle from request body if provided
+      interview = {
+        id: interviewId,
+        userId: null,
+        jobTitle: body.demoJobTitle || 'Demo Interview',
+        jobDescription: '',
+        difficulty: 'medium',
+        questions: [],
+        transcript: [],
+      };
+    } else {
+      interview = await InterviewModel.findById(interviewId);
 
-    if (!interview) {
-      return NextResponse.json(
-        { error: 'Interview not found' },
-        { status: 404 }
-      );
+      if (!interview) {
+        return NextResponse.json(
+          { error: 'Interview not found' },
+          { status: 404 }
+        );
+      }
     }
 
     const gemini = new GeminiService();
+    // Use demoJobTitle if provided (for demo interviews), otherwise use interview.jobTitle
+    const jobTitle = body.demoJobTitle || interview.jobTitle;
     const nextQuestion = await gemini.generateFollowUpQuestion(
       question,
       answer,
-      interview.jobTitle
+      jobTitle
     );
 
     const updatedQuestions = [...(interview.questions || []), question];
     const updatedTranscript = [...(interview.transcript || []), answer];
 
-    await InterviewModel.update(interviewId, {
-      questions: updatedQuestions,
-      transcript: updatedTranscript,
-      currentQuestion: nextQuestion,
-      audioUrl: audioUrl || interview.audioUrl,
-      updatedAt: new Date(),
-      status: 'in_progress',
-    });
+    // Only update database if not demo
+    if (!isDemo) {
+      await InterviewModel.update(interviewId, {
+        questions: updatedQuestions,
+        transcript: updatedTranscript,
+        currentQuestion: nextQuestion,
+        audioUrl: audioUrl || interview.audioUrl,
+        updatedAt: new Date(),
+        status: 'in_progress',
+      });
+    }
 
     return NextResponse.json({
       success: true,

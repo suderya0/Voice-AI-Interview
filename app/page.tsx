@@ -2,8 +2,14 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Home() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  
+  // All hooks must be declared before any conditional returns
   const [bubble1Visible, setBubble1Visible] = useState(false);
   const [bubble2Visible, setBubble2Visible] = useState(false);
   const [bubble3Visible, setBubble3Visible] = useState(false);
@@ -22,7 +28,20 @@ export default function Home() {
     bubble3: "Excellent. Here's the first question: Walk me through your experience so far."
   };
 
+  // Redirect authenticated users to dashboard
   useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [authLoading, user, router]);
+
+  // Typing animation effect - only run when not authenticated
+  useEffect(() => {
+    // Don't start animation if user is authenticated or still loading
+    if (authLoading || user) {
+      return;
+    }
+
     // Start typing bubble 1 after a short delay
     const timer1 = setTimeout(() => {
       setBubble1Visible(true);
@@ -44,7 +63,21 @@ export default function Home() {
     return () => {
       clearTimeout(timer1);
     };
-  }, []);
+  }, [authLoading, user]);
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-cyan-400 white-700 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  // Don't render home page if user is authenticated (will redirect)
+  if (user) {
+    return null;
+  }
 
   const typeText = (text: string, setText: (text: string) => void, setTyping: (typing: boolean) => void, onComplete?: () => void) => {
     setTyping(true);
@@ -137,7 +170,7 @@ export default function Home() {
               </p>
               
               {/* Start Interview Button */}
-              <Link href="/interview/create">
+              <Link href="/interview/create?demo=true">
                   <button className="px-10 py-4 bg-white rounded-full text-lg font-medium text-cyan-600 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                       Try Demonstration
                   </button>
