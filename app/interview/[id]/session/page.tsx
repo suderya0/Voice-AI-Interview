@@ -145,12 +145,15 @@ export default function InterviewSession() {
           await playSequence(['Resuming the interview.', q], () => {
             console.log('🎵 Resume audio finished, starting microphone...');
             setTimeout(() => {
-              if (!isStartingRef.current && !isStreamingRef.current && !streaming) {
+              // Force reset any stuck flags
+              isStartingRef.current = false;
+              isStoppingRef.current = false;
+              if (!streaming && !isStreamingRef.current) {
                 startLiveAnswer();
               } else {
                 console.log('⚠️ Skipping startLiveAnswer - already active');
               }
-            }, 100);
+            }, 300);
           });
         }
       } else {
@@ -399,19 +402,25 @@ export default function InterviewSession() {
           setLiveText(finalTranscript);
           console.log('✅ Final transcript saved:', finalTranscript);
           
-          // If we have a good final transcript, start timer for auto-submit
-          if (finalTranscript.length > 10) {
+          // Always start timer for auto-submit when we have any final transcript
+          if (finalTranscript.length > 3) {
+            console.log('⏱️ Starting silence timer for final transcript...');
             resetSilenceTimer();
           }
         } else {
           // Interim transcript - show live and save as fallback
-          setLiveText(transcript.trim());
+          const interimTranscript = transcript.trim();
+          setLiveText(interimTranscript);
           // Save interim as fallback if we don't have a final yet
-          if (!liveFinalRef.current && transcript.trim().length > 5) {
-            liveFinalRef.current = transcript.trim();
+          if (!liveFinalRef.current && interimTranscript.length > 5) {
+            liveFinalRef.current = interimTranscript;
           }
-          console.log('📝 Interim transcript:', transcript.trim());
-          resetSilenceTimer();
+          console.log('📝 Interim transcript:', interimTranscript);
+          
+          // Start timer for interim transcripts too - if we have meaningful text
+          if (interimTranscript.length > 5) {
+            resetSilenceTimer();
+          }
         }
       });
 
@@ -550,8 +559,12 @@ export default function InterviewSession() {
     }
     
     // Get the best transcript we have BEFORE stopping
-    const transcriptToSend = liveFinalRef.current || liveText;
-    console.log('📤 Transcript to send:', transcriptToSend, 'send:', send);
+    const transcriptToSend = liveFinalRef.current || liveText || '';
+    const trimmedTranscript = transcriptToSend.trim();
+    console.log('📤 Transcript to send:', trimmedTranscript, 'send:', send, 'length:', trimmedTranscript.length);
+    
+    // Store in const for use in setTimeout closure
+    const finalTranscriptToSend = trimmedTranscript;
     
     // Stop recording first (this will stop sending data to Deepgram)
     if (mediaRecorderRef.current) {
@@ -587,9 +600,10 @@ export default function InterviewSession() {
       isStartingRef.current = false; // Reset starting flag when stopped
       
       // Process transcript after everything is stopped
-      if (send && transcriptToSend && transcriptToSend.trim().length > 0) {
+      if (send && finalTranscriptToSend.length > 0) {
+        console.log('✅ Sending answer to server:', finalTranscriptToSend);
         setInfo('Cevap analiz ediliyor...');
-        sendAnswer(transcriptToSend.trim());
+        sendAnswer(finalTranscriptToSend);
       } else if (send) {
         console.warn('⚠️ No transcript to send, restarting...');
         setInfo('Cevap alınamadı, tekrar dinleniyor...');
@@ -610,25 +624,36 @@ export default function InterviewSession() {
       silenceTimerRef.current = null;
     }
     
-    // Don't start timer if already stopping
+    // Don't start timer if already stopping or not streaming
     if (isStoppingRef.current || !streaming || !isStreamingRef.current) {
+      console.log('⏱️ Cannot start silence timer - not streaming or stopping');
       return;
     }
     
+    console.log('⏱️ Starting 3-second silence timer...');
+    
     // Start new timer
     silenceTimerRef.current = setTimeout(() => {
+      console.log('⏱️ Silence timer fired - checking for transcript...');
+      
       // Double-check we're still streaming and not stopping
       if (isStoppingRef.current || !streaming || !isStreamingRef.current) {
+        console.log('⏱️ Silence timer cancelled - no longer streaming');
         return;
       }
       
-      // If we have any transcript (final or interim), submit it
-      const transcriptToSubmit = liveFinalRef.current || liveText;
-      if (transcriptToSubmit && transcriptToSubmit.trim().length > 0) {
-        console.log('⏱️ Silence detected after speech (3s), submitting transcript:', transcriptToSubmit.trim());
+      // Get the best transcript we have
+      const transcriptToSubmit = liveFinalRef.current || liveText || '';
+      const trimmedTranscript = transcriptToSubmit.trim();
+      
+      if (trimmedTranscript.length > 0) {
+        console.log('⏱️ Silence detected (3s) - submitting transcript:', trimmedTranscript);
+        console.log('📤 Transcript length:', trimmedTranscript.length);
         stopLiveAnswer(true);
       } else {
-        console.log('⏱️ Silence detected but no transcript yet, continuing to listen...');
+        console.log('⏱️ Silence detected but no transcript found, continuing to listen...');
+        // Restart timer to keep listening
+        resetSilenceTimer();
       }
     }, 3000); // Submit after 3s of silence after speech
   };
@@ -644,6 +669,12 @@ export default function InterviewSession() {
       }, 1000);
       return;
     }
+    
+    // Reset all flags before sending answer to ensure clean state for next question
+    console.log('🔄 Resetting flags before sending answer');
+    isStartingRef.current = false;
+    isStoppingRef.current = false;
+    isStreamingRef.current = false;
     
     console.log('Sending answer:', answer, 'for question:', currentQuestion);
     setLoading(true);
@@ -683,27 +714,63 @@ export default function InterviewSession() {
       
       // Play thank you message and next question
       // Mikrofon sadece tüm sesler bittikten sonra açılmalı
+      console.log('🎵 Starting to play next question sequence...');
+      console.log('🎵 Next question:', data.nextQuestion);
+      
       await playSequence([
         'Thank you for your answer. Here is the next question.',
         data.nextQuestion
       ], () => {
         console.log('🎵 Question audio finished, starting microphone...');
         // Restart listening for next answer - only after all audio finishes
+        // Wait a bit longer to ensure all state is cleared
         setTimeout(() => {
-          if (!isStartingRef.current && !isStreamingRef.current && !streaming) {
+          console.log('🎤 Checking state before starting microphone...', {
+            isStartingRef: isStartingRef.current,
+            isStreamingRef: isStreamingRef.current,
+            streaming,
+            isStoppingRef: isStoppingRef.current
+          });
+          
+          // Force reset flags if they're stuck
+          if (isStartingRef.current) {
+            console.log('🔄 Resetting stuck isStartingRef');
+            isStartingRef.current = false;
+          }
+          if (isStreamingRef.current && !streaming) {
+            console.log('🔄 Resetting stuck isStreamingRef');
+            isStreamingRef.current = false;
+          }
+          if (isStoppingRef.current) {
+            console.log('🔄 Resetting stuck isStoppingRef');
+            isStoppingRef.current = false;
+          }
+          
+          // Now try to start
+          if (!streaming && !isStreamingRef.current) {
+            console.log('🎤 Starting microphone for next question...');
             startLiveAnswer();
           } else {
-            console.log('⚠️ Skipping startLiveAnswer - already active');
+            console.log('⚠️ Skipping startLiveAnswer - still active:', {
+              streaming,
+              isStreamingRef: isStreamingRef.current
+            });
           }
-        }, 100);
+        }, 300); // Increased delay to ensure state is cleared
       });
+      
+      console.log('✅ sendAnswer completed successfully');
     } catch (err: any) {
-      console.error('Error sending answer:', err);
+      console.error('❌ Error in sendAnswer:', err);
+      console.error('❌ Error stack:', err.stack);
       setError(err.message || 'Yanıt gönderme hatası');
       setInfo('Hata oluştu, tekrar dinleniyor...');
-      // Try to restart listening after error
+      
+      // Even if there's an error, try to restart listening
+      // This ensures the interview can continue even if one question fails
       setTimeout(() => {
         if (!streaming && !isStreamingRef.current && !isStoppingRef.current) {
+          console.log('🔄 Attempting to restart after error...');
           startLiveAnswer();
         }
       }, 2000);
@@ -741,6 +808,22 @@ export default function InterviewSession() {
                 {liveText || 'Konuşmaya başlayın...'}
               </p>
             </div>
+            
+            {/* Manual submit button */}
+            {streaming && liveText && liveText.trim().length > 0 && (
+              <button
+                onClick={() => {
+                  console.log('📤 Manual submit clicked');
+                  const transcriptToSend = liveFinalRef.current || liveText;
+                  if (transcriptToSend && transcriptToSend.trim().length > 0) {
+                    stopLiveAnswer(true);
+                  }
+                }}
+                className="w-full px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium"
+              >
+                Cevabı Gönder
+              </button>
+            )}
           </div>
 
           {/* AI column */}
