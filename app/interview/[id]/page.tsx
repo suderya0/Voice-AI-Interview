@@ -106,7 +106,7 @@ export default function InterviewDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading interview...</p>
@@ -117,7 +117,7 @@ export default function InterviewDetail() {
 
   if (error || !interview) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white flex items-center justify-center">
         <div className="text-center bg-white rounded-2xl shadow-xl p-8 max-w-md">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Interview Not Found</h1>
           <p className="text-gray-600 mb-6">{error || 'The interview you are looking for does not exist.'}</p>
@@ -133,7 +133,7 @@ export default function InterviewDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-6">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white py-12 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">

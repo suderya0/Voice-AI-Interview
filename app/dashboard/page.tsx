@@ -11,8 +11,6 @@ export default function Dashboard() {
   const { user, loading: authLoading, signOut } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [interviews, setInterviews] = useState<any[]>([]);
-  const [interviewsLoading, setInterviewsLoading] = useState(true);
 
   useEffect(() => {
     // Only redirect if auth is loaded and user is not authenticated
@@ -25,7 +23,6 @@ export default function Dashboard() {
   useEffect(() => {
     if (user) {
       fetchProfile();
-      fetchInterviews();
     }
   }, [user]);
 
@@ -46,22 +43,6 @@ export default function Dashboard() {
     }
   };
 
-  const fetchInterviews = async () => {
-    if (!user) return;
-    
-    try {
-      const response = await fetch(`/api/interview/list?userId=${user.uid}&status=completed`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setInterviews(data.interviews || []);
-      }
-    } catch (error) {
-      console.error('Error fetching interviews:', error);
-    } finally {
-      setInterviewsLoading(false);
-    }
-  };
 
   const handleSignOut = async () => {
     try {
@@ -193,119 +174,96 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Recent Interviews & Feedbacks */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Recent Interviews */}
+        {/* Feedbacks */}
+        <div className="max-w-4xl">
           <div className="bg-white/95 rounded-3xl shadow-xl p-8">
-            <h2 className="text-2xl font-extralight text-gray-800 mb-6 font-concretica">Recent Interviews</h2>
-            {interviewsLoading ? (
-              <div className="text-gray-500 text-center py-8">Loading...</div>
-            ) : interviews.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">No interviews yet</p>
-                <Link href="/interview/create">
-                  <button className="px-6 py-2 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition-colors">
-                    Create Your First Interview
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-extralight text-gray-800 font-concretica">Your Feedbacks</h2>
+              {profile?.feedbacks && profile.feedbacks.length > 0 && (
+                <Link href="/feedbacks">
+                  <button className="text-sm text-cyan-600 hover:text-cyan-700 font-medium transition-colors">
+                    View All →
                   </button>
                 </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {interviews.slice(0, 5).map((interview) => (
-                  <Link key={interview.id} href={`/interview/${interview.id}`}>
-                    <div className="border border-gray-200 rounded-xl p-4 hover:bg-gray-50 transition-colors cursor-pointer">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-800 mb-1">{interview.jobTitle}</h3>
-                          <p className="text-sm text-gray-600">
-                            {new Date(interview.createdAt).toLocaleDateString()}
-                          </p>
-                          {interview.feedback && (
-                            <div className="mt-2 flex items-center gap-2">
-                              <span className="text-xs font-semibold text-gray-600">Score:</span>
-                              <span className="text-sm font-bold text-cyan-600">
-                                {interview.feedback.overallScore}/100
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          interview.status === 'completed' 
-                            ? 'bg-green-100 text-green-700'
-                            : interview.status === 'in_progress'
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}>
-                          {interview.status}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Feedbacks */}
-          <div className="bg-white/95 rounded-3xl shadow-xl p-8">
-            <h2 className="text-2xl font-extralight text-gray-800 mb-6 font-concretica">Your Feedbacks</h2>
+              )}
+            </div>
             {loading ? (
               <div className="text-gray-500 text-center py-8">Loading...</div>
             ) : !profile?.feedbacks || profile.feedbacks.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500 mb-4">No feedbacks yet</p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 mb-6">
                   Complete an interview to receive detailed feedback on your performance.
                 </p>
+                <Link href="/interview/create">
+                  <button className="px-6 py-2 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition-colors text-sm font-medium">
+                    Create Interview
+                  </button>
+                </Link>
               </div>
             ) : (
               <div className="space-y-4 max-h-[600px] overflow-y-auto">
-                {profile.feedbacks.map((feedback, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-xl p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-semibold text-gray-800">{feedback.jobTitle}</h3>
-                        <p className="text-xs text-gray-600 mt-1">
-                          {new Date(feedback.completedAt).toLocaleDateString()}
-                        </p>
+                {profile.feedbacks.slice(0, 5).map((feedback, idx) => (
+                  <Link key={idx} href={`/feedbacks/${feedback.interviewId}`}>
+                    <div className="border border-gray-200 rounded-xl p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-gray-800">{feedback.jobTitle}</h3>
+                          <p className="text-xs text-gray-600 mt-1">
+                            {new Date(feedback.completedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-cyan-600">
+                            {feedback.feedback.overallScore}
+                          </p>
+                          <p className="text-xs text-gray-600">/100</p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-cyan-600">
-                          {feedback.feedback.overallScore}
-                        </p>
-                        <p className="text-xs text-gray-600">/100</p>
+                      
+                      {feedback.feedback.strengths && feedback.feedback.strengths.length > 0 && (
+                        <div className="mb-3">
+                          <p className="text-xs font-semibold text-green-700 mb-1">Strengths</p>
+                          <ul className="text-xs text-gray-700 space-y-1">
+                            {feedback.feedback.strengths.slice(0, 2).map((strength, i) => (
+                              <li key={i} className="flex items-start gap-1">
+                                <span className="text-green-600 mt-0.5">•</span>
+                                <span>{strength}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      
+                      {feedback.feedback.weaknesses && feedback.feedback.weaknesses.length > 0 && (
+                        <div>
+                          <p className="text-xs font-semibold text-amber-700 mb-1">Areas to Improve</p>
+                          <ul className="text-xs text-gray-700 space-y-1">
+                            {feedback.feedback.weaknesses.slice(0, 2).map((weakness, i) => (
+                              <li key={i} className="flex items-start gap-1">
+                                <span className="text-amber-600 mt-0.5">•</span>
+                                <span>{weakness}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <p className="text-xs text-cyan-600 text-right">Click to view details →</p>
                       </div>
                     </div>
-                    
-                    {feedback.feedback.strengths && feedback.feedback.strengths.length > 0 && (
-                      <div className="mb-3">
-                        <p className="text-xs font-semibold text-green-700 mb-1">Strengths</p>
-                        <ul className="text-xs text-gray-700 space-y-1">
-                          {feedback.feedback.strengths.slice(0, 2).map((strength, i) => (
-                            <li key={i} className="flex items-start gap-1">
-                              <span className="text-green-600 mt-0.5">•</span>
-                              <span>{strength}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    
-                    {feedback.feedback.weaknesses && feedback.feedback.weaknesses.length > 0 && (
-                      <div>
-                        <p className="text-xs font-semibold text-amber-700 mb-1">Areas to Improve</p>
-                        <ul className="text-xs text-gray-700 space-y-1">
-                          {feedback.feedback.weaknesses.slice(0, 2).map((weakness, i) => (
-                            <li key={i} className="flex items-start gap-1">
-                              <span className="text-amber-600 mt-0.5">•</span>
-                              <span>{weakness}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
+                  </Link>
                 ))}
+                {profile.feedbacks.length > 5 && (
+                  <div className="text-center pt-4">
+                    <Link href="/feedbacks">
+                      <button className="text-sm text-cyan-600 hover:text-cyan-700 font-medium">
+                        View {profile.feedbacks.length - 5} more feedbacks →
+                      </button>
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
           </div>

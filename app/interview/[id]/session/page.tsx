@@ -769,7 +769,26 @@ export default function InterviewSession() {
       }
 
       // Save the turn
-      setTurns((prev) => [...prev, { question: currentQuestion, answer: answer.trim() }]);
+      const newTurn = { question: currentQuestion, answer: answer.trim() };
+      setTurns((prev) => [...prev, newTurn]);
+      
+      // Update interview transcript in database (for real interviews only)
+      if (!interviewId.startsWith('demo_')) {
+        try {
+          // Update transcript in background (don't wait for it)
+          fetch('/api/interview/update-transcript', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              interviewId,
+              question: currentQuestion,
+              answer: answer.trim(),
+            }),
+          }).catch(err => console.error('Error updating transcript:', err));
+        } catch (err) {
+          console.error('Error updating transcript:', err);
+        }
+      }
       
       // Update to next question
       setCurrentQuestion(data.nextQuestion);
@@ -952,12 +971,59 @@ export default function InterviewSession() {
           </div>
         )}
 
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-4">
           <button
-            onClick={() => router.push(`/interview/${interviewId}`)}
-            className="text-sm text-gray-600 hover:underline"
+            onClick={async () => {
+              // Check if this is a demo interview
+              const isDemo = interviewId.startsWith('demo_');
+              
+              if (isDemo) {
+                // For demo interviews, just redirect to home
+                router.push('/');
+                return;
+              }
+
+              // For real interviews, complete and generate feedback
+              try {
+                setLoading(true);
+                setInfo('Görüşme tamamlanıyor ve geri bildirim oluşturuluyor...');
+                
+                // Stop any active recording
+                if (streaming || isStreamingRef.current) {
+                  stopLiveAnswer(false);
+                }
+
+                // Collect all turns into transcript format
+                const transcript = turns.map(t => `Q: ${t.question}\nA: ${t.answer}`).join('\n\n');
+                
+                // Complete interview and generate feedback
+                const response = await fetch('/api/interview/complete', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ interviewId }),
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                  // Redirect to interview detail page to show feedback
+                  router.push(`/interview/${interviewId}`);
+                } else {
+                  alert('Görüşme tamamlanırken bir hata oluştu: ' + data.error);
+                  router.push(`/interview/${interviewId}`);
+                }
+              } catch (error) {
+                console.error('Error completing interview:', error);
+                alert('Görüşme tamamlanırken bir hata oluştu');
+                router.push(`/interview/${interviewId}`);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={loading}
+            className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Görüşmeyi Bitir
+            {loading ? 'Tamamlanıyor...' : 'Görüşmeyi Bitir ve Geri Bildirim Al'}
           </button>
         </div>
       </div>

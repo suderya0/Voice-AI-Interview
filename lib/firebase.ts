@@ -14,23 +14,32 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "",
 };
 
-// Initialize Firebase (only if not already initialized)
-let app: FirebaseApp;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
+// Initialize Firebase (only if not already initialized and on client-side)
+let app: FirebaseApp | null = null;
+
+if (typeof window !== 'undefined') {
+  if (!getApps().length) {
+    try {
+      app = initializeApp(firebaseConfig);
+    } catch (error) {
+      console.error('Firebase initialization error:', error);
+    }
+  } else {
+    app = getApps()[0];
+  }
 }
 
-// Initialize Firestore
-export const db: Firestore = getFirestore(app);
+// Initialize Firestore (only on client-side)
+export const db: Firestore | null = 
+  typeof window !== 'undefined' && app ? getFirestore(app) : null as any;
 
-// Initialize Auth
-export const auth: Auth = getAuth(app);
+// Initialize Auth (only on client-side)
+export const auth: Auth | null = 
+  typeof window !== 'undefined' && app ? getAuth(app) : null as any;
 
 // Initialize Analytics (only on client-side)
 export const analytics: Analytics | null = 
-  typeof window !== 'undefined' ? getAnalytics(app) : null;
+  typeof window !== 'undefined' && app ? getAnalytics(app) : null;
 
 export default app;
 
