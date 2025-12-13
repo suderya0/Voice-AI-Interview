@@ -364,7 +364,10 @@ export default function InterviewSession() {
       isStreamingRef: isStreamingRef.current,
       isStoppingRef: isStoppingRef.current,
       isStartingRef: isStartingRef.current,
-      hasDeepgramKey: !!deepgramKeyRef.current
+      hasDeepgramKey: !!deepgramKeyRef.current,
+      hasDeepgramConn: !!deepgramConnRef.current,
+      hasMicStream: !!micStreamRef.current,
+      hasMediaRecorder: !!mediaRecorderRef.current
     });
     
     // Prevent multiple simultaneous start attempts
@@ -373,11 +376,49 @@ export default function InterviewSession() {
       return;
     }
     
-    // Reset stopping flag first - it might be stuck from previous operation
-    // Only block if actually streaming right now
-    if (streaming || isStreamingRef.current) {
-      console.log('⚠️ Already streaming, cannot start');
+    // If already streaming, don't start again
+    // Use ref as source of truth since state updates are async
+    // Don't check streaming state - it may be stale
+    if (isStreamingRef.current) {
+      console.log('⚠️ Already streaming (ref check), cannot start');
       return;
+    }
+    
+    // If state says streaming but ref says not, reset state
+    if (streaming && !isStreamingRef.current) {
+      console.log('⚠️ State says streaming but ref says not - resetting state');
+      setStreaming(false);
+    }
+    
+    // Clean up any leftover resources before starting
+    if (deepgramConnRef.current) {
+      console.log('🧹 Cleaning up leftover Deepgram connection before start');
+      try {
+        deepgramConnRef.current.finish();
+      } catch (e) {
+        console.warn('Error cleaning up Deepgram:', e);
+      }
+      deepgramConnRef.current = null;
+    }
+    
+    if (micStreamRef.current) {
+      console.log('🧹 Cleaning up leftover microphone stream before start');
+      try {
+        micStreamRef.current.getTracks().forEach(t => t.stop());
+      } catch (e) {
+        console.warn('Error cleaning up microphone:', e);
+      }
+      micStreamRef.current = null;
+    }
+    
+    if (mediaRecorderRef.current) {
+      console.log('🧹 Cleaning up leftover MediaRecorder before start');
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (e) {
+        console.warn('Error cleaning up MediaRecorder:', e);
+      }
+      mediaRecorderRef.current = null;
     }
     
     // If stopping flag is true but we're not actually streaming, reset it
@@ -394,6 +435,9 @@ export default function InterviewSession() {
     liveFinalRef.current = '';
     isStoppingRef.current = false; // Explicitly reset
     isStreamingRef.current = false; // Explicitly reset
+    
+    // Wait a moment to ensure cleanup is complete
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     if (!deepgramKeyRef.current) {
       const errorMsg = 'Deepgram anahtarı alınamadı.';
@@ -589,7 +633,7 @@ export default function InterviewSession() {
     }
   };
 
-  const stopLiveAnswer = (send: boolean = true) => {
+  const stopLiveAnswer = async (send: boolean = true) => {
     // Prevent multiple calls - check both state and ref
     if (isStoppingRef.current || (!streaming && !isStreamingRef.current)) {
       if (isStoppingRef.current) {
@@ -614,58 +658,83 @@ export default function InterviewSession() {
     const trimmedTranscript = transcriptToSend.trim();
     console.log('📤 Transcript to send:', trimmedTranscript, 'send:', send, 'length:', trimmedTranscript.length);
     
-    // Store in const for use in setTimeout closure
+    // Store in const for use in async closure
     const finalTranscriptToSend = trimmedTranscript;
     
     // Stop recording first (this will stop sending data to Deepgram)
     if (mediaRecorderRef.current) {
       try {
         mediaRecorderRef.current.stop();
+        console.log('🛑 MediaRecorder stopped');
       } catch (e) {
         console.warn('Error stopping MediaRecorder:', e);
       }
       mediaRecorderRef.current = null;
     }
     
-    // Wait a bit for any remaining data to be sent
-    setTimeout(() => {
-      // Close Deepgram connection after data is sent
-      if (deepgramConnRef.current) {
-        try {
+    // Wait a bit for any remaining data to be sent, then close Deepgram connection
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Close Deepgram connection properly
+    if (deepgramConnRef.current) {
+      try {
+        const readyState = deepgramConnRef.current.getReadyState();
+        console.log('🔌 Deepgram connection state before close:', readyState);
+        
+        if (readyState === 1) { // OPEN
           deepgramConnRef.current.finish();
-        } catch (e) {
-          console.warn('Error finishing Deepgram connection:', e);
+          console.log('✅ Deepgram connection finished');
+        } else {
+          console.log('⚠️ Deepgram connection already closed or closing');
         }
-        deepgramConnRef.current = null;
+      } catch (e) {
+        console.warn('Error finishing Deepgram connection:', e);
       }
-      
-      // Stop microphone
-      if (micStreamRef.current) {
-        micStreamRef.current.getTracks().forEach((t) => t.stop());
+      deepgramConnRef.current = null;
+    }
+    
+    // Stop microphone tracks completely
+    if (micStreamRef.current) {
+      try {
+        micStreamRef.current.getTracks().forEach((track) => {
+          track.stop();
+          console.log('🛑 Microphone track stopped:', track.kind);
+        });
         micStreamRef.current = null;
+        console.log('✅ Microphone stream released');
+      } catch (e) {
+        console.warn('Error stopping microphone tracks:', e);
       }
-      
-      isStreamingRef.current = false;
-      setStreaming(false);
-      isStoppingRef.current = false;
-      isStartingRef.current = false; // Reset starting flag when stopped
-      
-      // Process transcript after everything is stopped
-      if (send && finalTranscriptToSend.length > 0) {
-        console.log('✅ Sending answer to server:', finalTranscriptToSend);
-        setInfo('Cevap analiz ediliyor...');
-        sendAnswer(finalTranscriptToSend);
-      } else if (send) {
-        console.warn('⚠️ No transcript to send, restarting...');
-        setInfo('Cevap alınamadı, tekrar dinleniyor...');
-        // Restart listening if no answer was captured
-        setTimeout(() => {
-          if (!streaming && !isStreamingRef.current && !isStoppingRef.current) {
-            startLiveAnswer();
-          }
-        }, 1000);
-      }
-    }, 200); // Small delay to let final data be sent
+    }
+    
+    // Wait a bit more to ensure all resources are released
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    // Reset all state flags - do refs first (synchronous)
+    isStreamingRef.current = false;
+    isStoppingRef.current = false;
+    isStartingRef.current = false; // Reset starting flag when stopped
+    
+    // Then update state (asynchronous, but refs are already updated)
+    setStreaming(false);
+    
+    console.log('✅ All resources cleaned up, state reset');
+    
+    // Process transcript after everything is stopped
+    if (send && finalTranscriptToSend.length > 0) {
+      console.log('✅ Sending answer to server:', finalTranscriptToSend);
+      setInfo('Cevap analiz ediliyor...');
+      sendAnswer(finalTranscriptToSend);
+    } else if (send) {
+      console.warn('⚠️ No transcript to send, restarting...');
+      setInfo('Cevap alınamadı, tekrar dinleniyor...');
+      // Restart listening if no answer was captured
+      setTimeout(() => {
+        if (!streaming && !isStreamingRef.current && !isStoppingRef.current) {
+          startLiveAnswer();
+        }
+      }, 1000);
+    }
   };
 
   const resetSilenceTimer = () => {
@@ -726,6 +795,8 @@ export default function InterviewSession() {
     isStartingRef.current = false;
     isStoppingRef.current = false;
     isStreamingRef.current = false;
+    // Also reset state to ensure it's in sync
+    setStreaming(false);
     
     console.log('Sending answer:', answer, 'for question:', currentQuestion);
     setLoading(true);
@@ -806,40 +877,92 @@ export default function InterviewSession() {
       ], () => {
         console.log('🎵 Question audio finished, starting microphone...');
         // Restart listening for next answer - only after all audio finishes
-        // Wait a bit longer to ensure all state is cleared
+        // Wait longer to ensure all state is cleared and resources are released
         setTimeout(() => {
           console.log('🎤 Checking state before starting microphone...', {
             isStartingRef: isStartingRef.current,
             isStreamingRef: isStreamingRef.current,
             streaming,
-            isStoppingRef: isStoppingRef.current
+            isStoppingRef: isStoppingRef.current,
+            hasDeepgramConn: !!deepgramConnRef.current,
+            hasMicStream: !!micStreamRef.current,
+            hasMediaRecorder: !!mediaRecorderRef.current
           });
           
-          // Force reset flags if they're stuck
-          if (isStartingRef.current) {
-            console.log('🔄 Resetting stuck isStartingRef');
-            isStartingRef.current = false;
-          }
-          if (isStreamingRef.current && !streaming) {
-            console.log('🔄 Resetting stuck isStreamingRef');
-            isStreamingRef.current = false;
-          }
-          if (isStoppingRef.current) {
-            console.log('🔄 Resetting stuck isStoppingRef');
-            isStoppingRef.current = false;
+          // Force cleanup any remaining resources
+          if (deepgramConnRef.current) {
+            console.log('🔄 Cleaning up leftover Deepgram connection');
+            try {
+              deepgramConnRef.current.finish();
+            } catch (e) {
+              console.warn('Error cleaning up Deepgram:', e);
+            }
+            deepgramConnRef.current = null;
           }
           
-          // Now try to start
-          if (!streaming && !isStreamingRef.current) {
-            console.log('🎤 Starting microphone for next question...');
-            startLiveAnswer();
-          } else {
-            console.log('⚠️ Skipping startLiveAnswer - still active:', {
-              streaming,
-              isStreamingRef: isStreamingRef.current
-            });
+          if (micStreamRef.current) {
+            console.log('🔄 Cleaning up leftover microphone stream');
+            try {
+              micStreamRef.current.getTracks().forEach(t => t.stop());
+            } catch (e) {
+              console.warn('Error cleaning up microphone:', e);
+            }
+            micStreamRef.current = null;
           }
-        }, 300); // Increased delay to ensure state is cleared
+          
+          if (mediaRecorderRef.current) {
+            console.log('🔄 Cleaning up leftover MediaRecorder');
+            try {
+              mediaRecorderRef.current.stop();
+            } catch (e) {
+              console.warn('Error cleaning up MediaRecorder:', e);
+            }
+            mediaRecorderRef.current = null;
+          }
+          
+          // Force reset ALL flags and state - use refs as source of truth
+          isStartingRef.current = false;
+          isStreamingRef.current = false;
+          isStoppingRef.current = false;
+          
+          // Force state update - use functional update to ensure it happens
+          setStreaming((prev) => {
+            if (prev) {
+              console.log('🔄 Resetting streaming state from', prev, 'to false');
+            }
+            return false;
+          });
+          
+          // Wait a bit more to ensure cleanup is complete and state is updated
+          setTimeout(() => {
+            // Use refs as source of truth, not state (state updates are async)
+            // Double-check and force reset if needed
+            if (isStreamingRef.current) {
+              console.log('🔄 Force resetting isStreamingRef in timeout');
+              isStreamingRef.current = false;
+            }
+            if (isStoppingRef.current) {
+              console.log('🔄 Force resetting isStoppingRef in timeout');
+              isStoppingRef.current = false;
+            }
+            if (isStartingRef.current) {
+              console.log('🔄 Force resetting isStartingRef in timeout');
+              isStartingRef.current = false;
+            }
+            
+            // Now check again with fresh refs
+            if (!isStreamingRef.current && !isStoppingRef.current && !isStartingRef.current) {
+              console.log('🎤 Starting microphone for next question...');
+              startLiveAnswer();
+            } else {
+              console.log('⚠️ Skipping startLiveAnswer - refs indicate still active:', {
+                isStreamingRef: isStreamingRef.current,
+                isStoppingRef: isStoppingRef.current,
+                isStartingRef: isStartingRef.current
+              });
+            }
+          }, 300);
+        }, 500); // Increased delay to ensure state is cleared
       });
       
       console.log('✅ sendAnswer completed successfully');
@@ -852,7 +975,8 @@ export default function InterviewSession() {
       // Even if there's an error, try to restart listening
       // This ensures the interview can continue even if one question fails
       setTimeout(() => {
-        if (!streaming && !isStreamingRef.current && !isStoppingRef.current) {
+        // Use refs as source of truth
+        if (!isStreamingRef.current && !isStoppingRef.current && !isStartingRef.current) {
           console.log('🔄 Attempting to restart after error...');
           startLiveAnswer();
         }
