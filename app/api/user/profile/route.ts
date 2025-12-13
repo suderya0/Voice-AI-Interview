@@ -9,7 +9,7 @@ import { logger } from '@/utils/logger';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, email, name } = body;
+    const { userId, email, name, avatar } = body;
 
     if (!userId || !email) {
       return NextResponse.json(
@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
       userId,
       email,
       name: name || email.split('@')[0],
+      avatar: avatar || existingProfile?.avatar,
       createdAt: existingProfile?.createdAt || new Date(),
       updatedAt: new Date(),
       feedbacks: existingProfile?.feedbacks || [],

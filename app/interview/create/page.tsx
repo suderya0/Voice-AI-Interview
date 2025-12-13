@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast, ToastContainer } from '@/components/Toast';
 
 export default function CreateInterview() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function CreateInterview() {
     difficulty: 'Beginner',
     duration: 30,
   });
+  const toast = useToast();
 
   useEffect(() => {
     // If not demo and user is not logged in, redirect to sign in
@@ -51,6 +53,7 @@ export default function CreateInterview() {
       const data = await response.json();
 
       if (data.success) {
+        toast.success('Interview created successfully!');
         // For demo interviews, store data in sessionStorage and go directly to session
         if (isDemo || data.isDemo) {
           sessionStorage.setItem('demoInterview', JSON.stringify({
@@ -60,16 +63,20 @@ export default function CreateInterview() {
             difficulty: formData.difficulty,
             duration: formData.duration,
           }));
-          router.push(`/interview/${data.interviewId}/session`);
+          setTimeout(() => {
+            router.push(`/interview/${data.interviewId}/session`);
+          }, 500);
         } else {
-          router.push(`/interview/${data.interviewId}`);
+          setTimeout(() => {
+            router.push(`/interview/${data.interviewId}`);
+          }, 500);
         }
       } else {
-        alert('Failed to create interview: ' + data.error);
+        toast.error('Failed to create interview: ' + data.error);
       }
     } catch (error) {
       console.error('Error creating interview:', error);
-      alert('An error occurred while creating the interview');
+      toast.error('An error occurred while creating the interview');
     } finally {
       setLoading(false);
     }
@@ -77,6 +84,7 @@ export default function CreateInterview() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white flex flex-col">
+      <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="max-w-6xl mx-auto w-full">
           {/* Info Cards Section */}

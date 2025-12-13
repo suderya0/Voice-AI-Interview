@@ -40,7 +40,20 @@ export default function SignUp() {
       await signUp(formData.email, formData.password, formData.name);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Sign up failed. Please try again.');
+      // Handle Firebase auth errors with user-friendly messages
+      let errorMessage = 'Sign up failed. Please try again.';
+      
+      if (err.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already in use. Please use a different email or sign in instead.';
+      } else if (err.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak. Please choose a stronger password.';
+      } else if (err.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address. Please check your email and try again.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
       console.error('Sign up error:', err);
     } finally {
       setLoading(false);

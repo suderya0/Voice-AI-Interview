@@ -8,6 +8,7 @@ export interface UserProfile {
   userId: string; // Firebase Auth UID
   email: string;
   name: string;
+  avatar?: string;
   createdAt: Date;
   updatedAt: Date;
   feedbacks: InterviewFeedback[];

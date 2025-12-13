@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserProfile, InterviewFeedback } from '@/models/user';
+import UserMenu from '@/components/UserMenu';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -44,15 +45,6 @@ export default function Dashboard() {
   };
 
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      router.push('/');
-      router.refresh(); // Refresh to ensure home page shows correctly
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
 
   if (authLoading || loading) {
     return (
@@ -86,23 +78,7 @@ export default function Dashboard() {
             </div>
 
             {/* User Menu */}
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-white text-sm font-medium">{profile?.name || user.email}</p>
-                  <p className="text-white/80 text-xs">{user.email}</p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-semibold">
-                  {(profile?.name || user.email || 'U')[0].toUpperCase()}
-                </div>
-              </div>
-              <button
-                onClick={handleSignOut}
-                className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-full text-sm transition-colors"
-              >
-                Sign Out
-              </button>
-            </div>
+            <UserMenu user={user} profile={profile} />
           </nav>
         </div>
       </header>
