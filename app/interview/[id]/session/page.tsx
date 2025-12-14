@@ -1102,8 +1102,74 @@ export default function InterviewSession() {
               const isDemo = interviewId.startsWith('demo_');
               
               if (isDemo) {
-                // For demo interviews, just redirect to home
-                router.push('/');
+                // For demo interviews, generate feedback and redirect to demo feedback page
+                try {
+                  setLoading(true);
+                  setInfo('Görüşme tamamlanıyor ve geri bildirim oluşturuluyor...');
+                  
+                  // Stop any active recording
+                  if (streaming || isStreamingRef.current) {
+                    stopLiveAnswer(false);
+                  }
+
+                  // Get demo data from sessionStorage
+                  const demoData = sessionStorage.getItem('demoInterview');
+                  let jobTitle = 'Demo Interview';
+                  let jobDescription = '';
+                  let difficulty = 'medium';
+                  
+                  if (demoData) {
+                    const parsed = JSON.parse(demoData);
+                    if (parsed.interviewId === interviewId) {
+                      jobTitle = parsed.jobTitle || jobTitle;
+                      jobDescription = parsed.jobDescription || jobDescription;
+                      difficulty = parsed.difficulty || difficulty;
+                    }
+                  }
+
+                  // Collect all turns into transcript format
+                  const transcript = turns.map(t => `Q: ${t.question}\nA: ${t.answer}`).join('\n\n');
+                  const questions = turns.map(t => t.question);
+                  
+                  // Complete interview and generate feedback
+                  const response = await fetch('/api/interview/complete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                      interviewId,
+                      transcript,
+                      questions,
+                      jobTitle,
+                      jobDescription,
+                      difficulty,
+                    }),
+                  });
+
+                  const data = await response.json();
+                  
+                  if (data.success && data.feedback) {
+                    // Store feedback in sessionStorage for the demo feedback page
+                    sessionStorage.setItem('demoFeedback', JSON.stringify({
+                      feedback: data.feedback,
+                      jobTitle,
+                      jobDescription,
+                      difficulty,
+                    }));
+                    
+                    // Redirect to demo feedback page
+                    router.push('/demo/feedback');
+                  } else {
+                    // If feedback generation failed, still redirect but show message
+                    console.warn('Demo feedback generation failed:', data.error || data.message);
+                    router.push('/demo/feedback');
+                  }
+                } catch (error) {
+                  console.error('Error completing demo interview:', error);
+                  // Still redirect to feedback page even on error
+                  router.push('/demo/feedback');
+                } finally {
+                  setLoading(false);
+                }
                 return;
               }
 

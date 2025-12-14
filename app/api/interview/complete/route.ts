@@ -24,11 +24,54 @@ export async function POST(request: NextRequest) {
     const isDemo = interviewId.startsWith('demo_');
     
     if (isDemo) {
-      return NextResponse.json({
-        success: true,
-        message: 'Demo interview completed (no feedback generated)',
-        isDemo: true,
-      });
+      // For demo interviews, generate feedback from the transcript in the request body
+      const { transcript, jobTitle, jobDescription, difficulty, questions } = body;
+      
+      if (!transcript || transcript.trim().length === 0) {
+        return NextResponse.json({
+          success: true,
+          message: 'Demo interview completed (no transcript provided)',
+          isDemo: true,
+        });
+      }
+
+      try {
+        // Generate feedback using Gemini
+        const geminiService = new GeminiService();
+        
+        const transcriptText = Array.isArray(transcript) 
+          ? transcript.join('\n')
+          : transcript;
+
+        const feedback = await geminiService.generateFeedback({
+          jobTitle: jobTitle || 'Demo Interview',
+          jobDescription: jobDescription || '',
+          questions: questions || [],
+          transcript: transcriptText,
+          difficulty: difficulty || 'medium',
+        });
+
+        logger.info('Demo interview feedback generated', { interviewId });
+
+        return NextResponse.json({
+          success: true,
+          interviewId,
+          feedback: {
+            ...feedback,
+            generatedAt: new Date(),
+          },
+          isDemo: true,
+        });
+      } catch (error: any) {
+        logger.error('Error generating demo feedback', { error: error.message, stack: error.stack });
+        // Even if feedback generation fails, return success so user can still see the page
+        return NextResponse.json({
+          success: true,
+          message: 'Demo interview completed (feedback generation failed)',
+          isDemo: true,
+          error: error.message,
+        });
+      }
     }
 
     // Fetch interview from database
