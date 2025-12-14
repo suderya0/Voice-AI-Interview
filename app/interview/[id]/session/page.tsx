@@ -24,6 +24,8 @@ export default function InterviewSession() {
 
   const deepgramKeyRef = useRef<string>('');
   const liveFinalRef = useRef<string>('');
+  const accumulatedAnswerRef = useRef<string>(''); // Accumulate all final transcripts for full answer
+  const lastFinalTranscriptRef = useRef<string>(''); // Track last final transcript to detect updates vs continuations
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isStoppingRef = useRef<boolean>(false);
   const isStreamingRef = useRef<boolean>(false);
@@ -433,6 +435,8 @@ export default function InterviewSession() {
     setError(null);
     setLiveText('');
     liveFinalRef.current = '';
+    accumulatedAnswerRef.current = ''; // Reset accumulated answer
+    lastFinalTranscriptRef.current = ''; // Reset last final transcript tracker
     isStoppingRef.current = false; // Explicitly reset
     isStreamingRef.current = false; // Explicitly reset
     
@@ -486,16 +490,67 @@ export default function InterviewSession() {
         });
         
         if (isFinal) {
-          // Final transcript - save it (use best confidence)
+          // Final transcript - accumulate it for full answer
           const finalTranscript = transcript.trim();
+          
           if (confidence > 0.5) { // Only use if confidence is reasonable
-            liveFinalRef.current = finalTranscript;
-          } else if (!liveFinalRef.current) {
+            // Deepgram sends final transcripts for complete segments
+            // We need to accumulate them to get the full answer
+            if (accumulatedAnswerRef.current) {
+              const lastFinal = lastFinalTranscriptRef.current.toLowerCase().trim();
+              const newFinal = finalTranscript.toLowerCase().trim();
+              
+              // Check if this is an update to the last segment or a new segment
+              if (lastFinal && newFinal.includes(lastFinal) && newFinal.length > lastFinal.length) {
+                // This is an updated/expanded version of the last segment
+                // Only replace if the last segment is at the end of accumulated answer
+                const accumulatedLower = accumulatedAnswerRef.current.toLowerCase();
+                const lastIndex = accumulatedLower.lastIndexOf(lastFinal);
+                const isAtEnd = lastIndex !== -1 && (lastIndex + lastFinal.length >= accumulatedLower.length - 1);
+                
+                if (isAtEnd) {
+                  // Replace the last segment with the new expanded version
+                  const before = accumulatedAnswerRef.current.substring(0, lastIndex).trim();
+                  accumulatedAnswerRef.current = before 
+                    ? (before + ' ' + finalTranscript).trim()
+                    : finalTranscript;
+                } else {
+                  // Last segment not at end - this is likely a new segment, append it
+                  accumulatedAnswerRef.current = accumulatedAnswerRef.current + ' ' + finalTranscript;
+                }
+                lastFinalTranscriptRef.current = finalTranscript;
+              } else if (lastFinal && lastFinal.includes(newFinal) && lastFinal.length > newFinal.length) {
+                // Duplicate or shorter version - ignore
+                console.log('⚠️ Ignoring duplicate/shorter final transcript:', finalTranscript);
+              } else if (newFinal !== lastFinal) {
+                // This is a new segment - append it
+                accumulatedAnswerRef.current = accumulatedAnswerRef.current + ' ' + finalTranscript;
+                lastFinalTranscriptRef.current = finalTranscript;
+              } else {
+                // Same as last - ignore duplicate
+                console.log('⚠️ Ignoring duplicate final transcript:', finalTranscript);
+              }
+            } else {
+              // First final transcript
+              accumulatedAnswerRef.current = finalTranscript;
+              lastFinalTranscriptRef.current = finalTranscript;
+            }
+            
+            // Also update liveFinalRef for backward compatibility
+            liveFinalRef.current = accumulatedAnswerRef.current;
+            
+            // For subtitle display, show the latest final transcript (real-time feedback)
+            // This gives users immediate visual feedback without breaking the flow
+            setLiveText(finalTranscript);
+            console.log('✅ Final transcript received:', finalTranscript);
+            console.log('📝 Accumulated full answer:', accumulatedAnswerRef.current);
+          } else if (!accumulatedAnswerRef.current) {
             // Use even low confidence if we have nothing else
+            accumulatedAnswerRef.current = finalTranscript;
+            lastFinalTranscriptRef.current = finalTranscript;
             liveFinalRef.current = finalTranscript;
+            setLiveText(finalTranscript);
           }
-          setLiveText(finalTranscript);
-          console.log('✅ Final transcript saved:', finalTranscript);
           
           // Always start timer for auto-submit when we have any final transcript
           if (finalTranscript.length > 3) {
@@ -503,11 +558,13 @@ export default function InterviewSession() {
             resetSilenceTimer();
           }
         } else {
-          // Interim transcript - show live and save as fallback
+          // Interim transcript - show live for real-time subtitle feedback
           const interimTranscript = transcript.trim();
           setLiveText(interimTranscript);
-          // Save interim as fallback if we don't have a final yet
-          if (!liveFinalRef.current && interimTranscript.length > 5) {
+          
+          // Save interim as fallback if we don't have any accumulated answer yet
+          if (!accumulatedAnswerRef.current && interimTranscript.length > 5) {
+            accumulatedAnswerRef.current = interimTranscript;
             liveFinalRef.current = interimTranscript;
           }
           console.log('📝 Interim transcript:', interimTranscript);
@@ -654,9 +711,13 @@ export default function InterviewSession() {
     }
     
     // Get the best transcript we have BEFORE stopping
-    const transcriptToSend = liveFinalRef.current || liveText || '';
+    // Use accumulated answer (full answer) if available, otherwise fall back to liveFinalRef or liveText
+    const transcriptToSend = accumulatedAnswerRef.current || liveFinalRef.current || liveText || '';
     const trimmedTranscript = transcriptToSend.trim();
     console.log('📤 Transcript to send:', trimmedTranscript, 'send:', send, 'length:', trimmedTranscript.length);
+    console.log('📤 Accumulated answer:', accumulatedAnswerRef.current);
+    console.log('📤 Live final ref:', liveFinalRef.current);
+    console.log('📤 Live text:', liveText);
     
     // Store in const for use in async closure
     const finalTranscriptToSend = trimmedTranscript;
@@ -762,13 +823,14 @@ export default function InterviewSession() {
         return;
       }
       
-      // Get the best transcript we have
-      const transcriptToSubmit = liveFinalRef.current || liveText || '';
+      // Get the best transcript we have (use accumulated answer for full answer)
+      const transcriptToSubmit = accumulatedAnswerRef.current || liveFinalRef.current || liveText || '';
       const trimmedTranscript = transcriptToSubmit.trim();
       
       if (trimmedTranscript.length > 0) {
         console.log('⏱️ Silence detected (3s) - submitting transcript:', trimmedTranscript);
         console.log('📤 Transcript length:', trimmedTranscript.length);
+        console.log('📤 Accumulated answer:', accumulatedAnswerRef.current);
         stopLiveAnswer(true);
       } else {
         console.log('⏱️ Silence detected but no transcript found, continuing to listen...');
@@ -803,6 +865,8 @@ export default function InterviewSession() {
     setError(null);
     setLiveText(''); // Clear live text
     liveFinalRef.current = ''; // Clear final ref
+    accumulatedAnswerRef.current = ''; // Clear accumulated answer
+    lastFinalTranscriptRef.current = ''; // Clear last final transcript tracker
     
     // For demo interviews, get job title from sessionStorage
     let demoJobTitle = null;
@@ -1024,7 +1088,8 @@ export default function InterviewSession() {
               <button
                 onClick={() => {
                   console.log('📤 Manual submit clicked');
-                  const transcriptToSend = liveFinalRef.current || liveText;
+                  // Use accumulated answer for full answer, fallback to liveFinalRef or liveText
+                  const transcriptToSend = accumulatedAnswerRef.current || liveFinalRef.current || liveText;
                   if (transcriptToSend && transcriptToSend.trim().length > 0) {
                     stopLiveAnswer(true);
                   }
