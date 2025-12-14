@@ -62,17 +62,18 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white">
       {/* Header */}
       <header className="bg-white/30 backdrop-blur-sm border-b border-white/20">
-        <div className="container mx-auto px-6 py-4">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <nav className="flex items-center justify-between">
             {/* Logo and Brand Name */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <img 
                 src="/images/logo.png" 
                 alt="Intervai Logo" 
-                width={48} 
-                height={48} 
+                width={32}
+                height={32}
+                className="w-8 h-8 sm:w-12 sm:h-12"
               />
-              <span className="text-2xl font-extralight tracking-wide text-white font-concretica">
+              <span className="text-xl sm:text-2xl font-extralight tracking-wide text-white font-concretica">
                 intervai
               </span>
             </div>
@@ -84,59 +85,59 @@ export default function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-12">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12">
         {/* Welcome Section */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-extralight text-white mb-2 font-concretica">
+        <div className="mb-6 sm:mb-8 md:mb-12">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extralight text-white mb-1 sm:mb-2 font-concretica">
             Welcome back, {profile?.name || user.email?.split('@')[0]}!
           </h1>
-          <p className="text-white/90 text-lg">
+          <p className="text-white/90 text-sm sm:text-base md:text-lg">
             Ready to practice your interview skills?
           </p>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8 md:mb-12">
           {/* Create Interview Card */}
           <Link href="/interview/create">
-            <div className="bg-white/95 rounded-3xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-2xl flex items-center justify-center">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white/95 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
+              <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-extralight text-gray-800 font-concretica">Create Interview</h2>
-                  <p className="text-gray-600 text-sm">Start a new practice session</p>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-extralight text-gray-800 font-concretica">Create Interview</h2>
+                  <p className="text-gray-600 text-xs sm:text-sm">Start a new practice session</p>
                 </div>
               </div>
-              <p className="text-gray-700 mt-4">
+              <p className="text-gray-700 mt-3 sm:mt-4 text-sm sm:text-base">
                 Create a customized interview session tailored to your job role and difficulty level.
               </p>
             </div>
           </Link>
 
           {/* Profile Stats Card */}
-          <div className="bg-white/95 rounded-3xl shadow-xl p-8">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white/95 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8">
+            <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
               <div>
-                <h2 className="text-2xl font-extralight text-gray-800 font-concretica">Your Stats</h2>
-                <p className="text-gray-600 text-sm">Interview performance</p>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-extralight text-gray-800 font-concretica">Your Stats</h2>
+                <p className="text-gray-600 text-xs sm:text-sm">Interview performance</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              <div className="text-center p-4 bg-gray-50 rounded-xl">
-                <p className="text-3xl font-bold text-cyan-600">{profile?.feedbacks?.length || 0}</p>
-                <p className="text-sm text-gray-600 mt-1">Interviews</p>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
+              <div className="text-center p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+                <p className="text-2xl sm:text-3xl font-bold text-cyan-600">{profile?.feedbacks?.length || 0}</p>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">Interviews</p>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-xl">
-                <p className="text-3xl font-bold text-purple-600">
+              <div className="text-center p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+                <p className="text-2xl sm:text-3xl font-bold text-purple-600">
                   {profile?.feedbacks && profile.feedbacks.length > 0
                     ? Math.round(
                         profile.feedbacks.reduce((sum, f) => sum + f.feedback.overallScore, 0) /
@@ -144,7 +145,7 @@ export default function Dashboard() {
                       )
                     : 0}
                 </p>
-                <p className="text-sm text-gray-600 mt-1">Avg Score</p>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">Avg Score</p>
               </div>
             </div>
           </div>
@@ -152,12 +153,12 @@ export default function Dashboard() {
 
         {/* Feedbacks */}
         <div className="max-w-4xl">
-          <div className="bg-white/95 rounded-3xl shadow-xl p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-extralight text-gray-800 font-concretica">Your Feedbacks</h2>
+          <div className="bg-white/95 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-extralight text-gray-800 font-concretica">Your Feedbacks</h2>
               {profile?.feedbacks && profile.feedbacks.length > 0 && (
                 <Link href="/feedbacks">
-                  <button className="text-sm text-cyan-600 hover:text-cyan-700 font-medium transition-colors">
+                  <button className="text-xs sm:text-sm text-cyan-600 hover:text-cyan-700 font-medium transition-colors">
                     View All →
                   </button>
                 </Link>
