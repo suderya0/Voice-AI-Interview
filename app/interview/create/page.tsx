@@ -83,7 +83,7 @@ export default function CreateInterview() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white dark:from-slate-900 dark:to-slate-950 flex flex-col">
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="max-w-6xl mx-auto w-full">
@@ -91,11 +91,11 @@ export default function CreateInterview() {
 
 
           {/* Form Section */}
-          <div className="bg-white/95 rounded-3xl shadow-xl p-8 md:p-12">
-            <h1 className="text-3xl font-extralight text-gray-800 mb-2 font-concretica">
+          <div className="bg-white/95 dark:bg-slate-900/90 rounded-3xl shadow-xl p-8 md:p-12">
+            <h1 className="text-3xl font-extralight text-gray-800 dark:text-slate-100 mb-2 font-concretica">
               {isDemo ? 'Try Demonstration' : 'Create New Interview'}
             </h1>
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 dark:text-slate-300 mb-8">
               {isDemo 
                 ? 'Try out our AI interview platform. This demo won\'t be saved.'
                 : 'Fill in the details to start your practice interview'}
@@ -114,7 +114,7 @@ export default function CreateInterview() {
           <form onSubmit={handleSubmit} className="space-y-6">
 
             <div>
-              <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
                 Job Title *
               </label>
               <input
@@ -123,13 +123,13 @@ export default function CreateInterview() {
                 required
                 value={formData.jobTitle}
                 onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900/80 text-gray-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition"
                 placeholder="e.g., Software Engineer, Product Manager"
               />
             </div>
 
             <div>
-              <label htmlFor="jobDescription" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="jobDescription" className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
                 Job Description
               </label>
               <textarea
@@ -137,21 +137,21 @@ export default function CreateInterview() {
                 value={formData.jobDescription}
                 onChange={(e) => setFormData({ ...formData, jobDescription: e.target.value })}
                 rows={4}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition resize-none"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900/80 text-gray-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition resize-none"
                 placeholder="Describe the role and requirements..."
               />
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
                   Difficulty Level
                 </label>
                 <select
                   id="difficulty"
                   value={formData.difficulty}
                   onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900/80 text-gray-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition"
                 >
                   <option value="Beginner">Beginner</option>
                   <option value="Intermediate">Intermediate</option>
@@ -162,7 +162,7 @@ export default function CreateInterview() {
               </div>
 
               <div>
-                <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="duration" className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
                   Duration (minutes)
                 </label>
                 <input
@@ -172,7 +172,7 @@ export default function CreateInterview() {
                   max="60"
                   value={formData.duration}
                   onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900/80 text-gray-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition"
                 />
               </div>
             </div>
@@ -181,7 +181,7 @@ export default function CreateInterview() {
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-medium"
+                className="flex-1 px-6 py-3 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-100 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition font-medium"
               >
                 Cancel
               </button>
@@ -199,41 +199,42 @@ export default function CreateInterview() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-white/30 backdrop-blur-sm border-t border-white/20 py-8 px-6">
+      <footer className="bg-white/30 dark:bg-transparent backdrop-blur-sm border-t border-white/20 dark:border-slate-800/60 py-6 sm:py-8 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-6">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-6">
+            <div className="col-span-2 sm:col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
                 <img 
                   src="/images/logo.png" 
-                  alt="Intervai Logo" 
-                  width={32} 
-                  height={32} 
+                  alt="Icareerly Logo" 
+                  width={28}
+                  height={28}
+                  className="w-7 h-7 sm:w-8 sm:h-8"
                 />
-                <span className="text-xl font-extralight tracking-wide text-gray-800 font-concretica">
-                  intervai
+                <span className="text-lg sm:text-xl font-extralight tracking-wide text-gray-800 dark:text-slate-100 font-concretica">
+                  icareerly  
                 </span>
               </div>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 dark:text-slate-300 text-xs sm:text-sm">
                 Stress-free simulations. Real-world impact.
               </p>
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-3 font-concretica">Platform</h4>
-              <ul className="space-y-2">
+              <h4 className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-slate-100 mb-2 sm:mb-3 font-concretica">Platform</h4>
+              <ul className="space-y-1.5 sm:space-y-2">
                 <li>
-                  <a href="/interview/create" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="/interview/create" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     Create Interview
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="#" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     How It Works
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="#" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     Features
                   </a>
                 </li>
@@ -241,20 +242,20 @@ export default function CreateInterview() {
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-3 font-concretica">Support</h4>
-              <ul className="space-y-2">
+              <h4 className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-slate-100 mb-2 sm:mb-3 font-concretica">Support</h4>
+              <ul className="space-y-1.5 sm:space-y-2">
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="/faq" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     FAQ
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="#" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     Contact Us
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="#" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     Help Center
                   </a>
                 </li>
@@ -262,15 +263,15 @@ export default function CreateInterview() {
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-3 font-concretica">Account</h4>
-              <ul className="space-y-2">
+              <h4 className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-slate-100 mb-2 sm:mb-3 font-concretica">Account</h4>
+              <ul className="space-y-1.5 sm:space-y-2">
                 <li>
-                  <a href="/auth/sign-in" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="/auth/sign-in" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     Sign In
                   </a>
                 </li>
                 <li>
-                  <a href="/auth/sign-up" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="/auth/sign-up" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     Sign Up
                   </a>
                 </li>
@@ -278,15 +279,15 @@ export default function CreateInterview() {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-white/20 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-600 text-sm">
-              © {new Date().getFullYear()} intervai. All rights reserved.
+          <div className="pt-4 sm:pt-6 border-t border-white/20 dark:border-slate-800/60 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+            <p className="text-gray-600 dark:text-slate-400 text-xs sm:text-sm text-center sm:text-left">
+              © {new Date().getFullYear()} icareerly. All rights reserved.
             </p>
-            <div className="flex gap-6">
-              <a href="#" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+            <div className="flex flex-wrap gap-4 sm:gap-6 justify-center sm:justify-end">
+              <a href="#" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                 Privacy Policy
               </a>
-              <a href="#" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+              <a href="#" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                 Terms of Service
               </a>
             </div>

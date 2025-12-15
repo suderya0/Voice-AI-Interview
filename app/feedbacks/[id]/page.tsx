@@ -97,7 +97,7 @@ export default function FeedbackDetailPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white dark:from-slate-900 dark:to-slate-950 flex items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
@@ -109,12 +109,12 @@ export default function FeedbackDetailPage() {
 
   if (!feedback) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white flex items-center justify-center">
-        <div className="bg-white/95 rounded-3xl shadow-xl p-12 text-center max-w-md">
-          <h2 className="text-2xl font-extralight text-gray-800 mb-4 font-concretica">
+      <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white dark:from-slate-900 dark:to-slate-950 flex items-center justify-center">
+        <div className="bg-white/95 dark:bg-slate-900/90 rounded-3xl shadow-xl p-12 text-center max-w-md">
+          <h2 className="text-2xl font-extralight text-gray-800 dark:text-slate-100 mb-4 font-concretica">
             Feedback Not Found
           </h2>
-          <p className="text-gray-600 mb-8">
+          <p className="text-gray-600 dark:text-slate-300 mb-8">
             The feedback you're looking for doesn't exist or you don't have access to it.
           </p>
           <Link href="/feedbacks">
@@ -128,24 +128,24 @@ export default function FeedbackDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white dark:from-slate-900 dark:to-slate-950">
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
       {/* Header */}
-      <header className="bg-white/30 backdrop-blur-sm border-b border-white/20">
+      <header className="bg-white/30 dark:bg-slate-900/80 backdrop-blur-sm border-b border-white/20 dark:border-slate-800/80">
         <div className="container mx-auto px-6 py-4">
           <nav className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link href="/dashboard">
                 <img 
                   src="/images/logo.png" 
-                  alt="Intervai Logo" 
+                  alt="Icareerly Logo" 
                   width={48} 
                   height={48} 
                   className="cursor-pointer"
                 />
               </Link>
               <span className="text-2xl font-extralight tracking-wide text-white font-concretica">
-                intervai
+                icareerly
               </span>
             </div>
             <Link
@@ -202,20 +202,20 @@ export default function FeedbackDetailPage() {
         <div className="space-y-6">
           {/* Strengths */}
           {feedback.feedback.strengths && feedback.feedback.strengths.length > 0 && (
-            <div className="bg-white/95 rounded-3xl shadow-xl p-8">
+            <div className="bg-white/95 dark:bg-slate-900/90 rounded-3xl shadow-xl p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center">
                   <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-extralight text-gray-800 font-concretica">Strengths</h3>
+                <h3 className="text-2xl font-extralight text-gray-800 dark:text-slate-100 font-concretica">Strengths</h3>
               </div>
               <ul className="space-y-3">
                 {feedback.feedback.strengths.map((strength, idx) => (
                   <li key={idx} className="flex items-start gap-3">
                     <span className="text-green-600 mt-1">✓</span>
-                    <span className="text-gray-700 text-lg">{strength}</span>
+                    <span className="text-gray-700 dark:text-slate-200 text-lg">{strength}</span>
                   </li>
                 ))}
               </ul>
@@ -224,20 +224,20 @@ export default function FeedbackDetailPage() {
 
           {/* Areas for Improvement */}
           {feedback.feedback.weaknesses && feedback.feedback.weaknesses.length > 0 && (
-            <div className="bg-white/95 rounded-3xl shadow-xl p-8">
+            <div className="bg-white/95 dark:bg-slate-900/90 rounded-3xl shadow-xl p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center">
                   <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-extralight text-gray-800 font-concretica">Areas for Improvement</h3>
+                <h3 className="text-2xl font-extralight text-gray-800 dark:text-slate-100 font-concretica">Areas for Improvement</h3>
               </div>
               <ul className="space-y-3">
                 {feedback.feedback.weaknesses.map((weakness, idx) => (
                   <li key={idx} className="flex items-start gap-3">
                     <span className="text-amber-600 mt-1">•</span>
-                    <span className="text-gray-700 text-lg">{weakness}</span>
+                    <span className="text-gray-700 dark:text-slate-200 text-lg">{weakness}</span>
                   </li>
                 ))}
               </ul>
@@ -246,20 +246,20 @@ export default function FeedbackDetailPage() {
 
           {/* Recommendations */}
           {feedback.feedback.recommendations && feedback.feedback.recommendations.length > 0 && (
-            <div className="bg-white/95 rounded-3xl shadow-xl p-8">
+            <div className="bg-white/95 dark:bg-slate-900/90 rounded-3xl shadow-xl p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
                   <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-extralight text-gray-800 font-concretica">Recommendations</h3>
+                <h3 className="text-2xl font-extralight text-gray-800 dark:text-slate-100 font-concretica">Recommendations</h3>
               </div>
               <ul className="space-y-3">
                 {feedback.feedback.recommendations.map((recommendation, idx) => (
                   <li key={idx} className="flex items-start gap-3">
                     <span className="text-blue-600 mt-1">→</span>
-                    <span className="text-gray-700 text-lg">{recommendation}</span>
+                    <span className="text-gray-700 dark:text-slate-200 text-lg">{recommendation}</span>
                   </li>
                 ))}
               </ul>
@@ -268,17 +268,17 @@ export default function FeedbackDetailPage() {
 
           {/* Detailed Analysis */}
           {feedback.feedback.detailedAnalysis && (
-            <div className="bg-white/95 rounded-3xl shadow-xl p-8">
+            <div className="bg-white/95 dark:bg-slate-900/90 rounded-3xl shadow-xl p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center">
                   <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-extralight text-gray-800 font-concretica">Detailed Analysis</h3>
+                <h3 className="text-2xl font-extralight text-gray-800 dark:text-slate-100 font-concretica">Detailed Analysis</h3>
               </div>
               <div className="prose max-w-none">
-                <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-wrap">
+                <p className="text-gray-700 dark:text-slate-200 text-lg leading-relaxed whitespace-pre-wrap">
                   {feedback.feedback.detailedAnalysis}
                 </p>
               </div>

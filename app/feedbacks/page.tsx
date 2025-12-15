@@ -75,7 +75,7 @@ export default function FeedbacksPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white dark:from-slate-900 dark:to-slate-950 flex items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
@@ -88,24 +88,24 @@ export default function FeedbacksPage() {
   const feedbacks = profile?.feedbacks || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white dark:from-slate-900 dark:to-slate-950">
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
       {/* Header */}
-      <header className="bg-white/30 backdrop-blur-sm border-b border-white/20">
+      <header className="bg-white/30 dark:bg-slate-900/80 backdrop-blur-sm border-b border-white/20 dark:border-slate-800/80">
         <div className="container mx-auto px-6 py-4">
           <nav className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link href="/dashboard">
                 <img 
                   src="/images/logo.png" 
-                  alt="Intervai Logo" 
+                  alt="Icareerly Logo" 
                   width={48} 
                   height={48} 
                   className="cursor-pointer"
                 />
               </Link>
               <span className="text-2xl font-extralight tracking-wide text-white font-concretica">
-                intervai
+                icareerly
               </span>
             </div>
             <Link
@@ -130,16 +130,16 @@ export default function FeedbacksPage() {
         </div>
 
         {feedbacks.length === 0 ? (
-          <div className="bg-white/95 rounded-3xl shadow-xl p-12 text-center">
+          <div className="bg-white/95 dark:bg-slate-900/90 rounded-3xl shadow-xl p-12 text-center">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-extralight text-gray-800 mb-4 font-concretica">
+            <h2 className="text-2xl font-extralight text-gray-800 dark:text-slate-100 mb-4 font-concretica">
               No Feedbacks Yet
             </h2>
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 dark:text-slate-300 mb-8">
               Complete an interview to receive detailed feedback on your performance.
             </p>
             <Link href="/interview/create">
@@ -153,14 +153,14 @@ export default function FeedbacksPage() {
             {feedbacks.map((feedback, idx) => (
               <div key={idx} className="relative">
                 <Link href={`/feedbacks/${feedback.interviewId}`}>
-                  <div className="bg-white/95 rounded-3xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
+                  <div className="bg-white/95 dark:bg-slate-900/90 rounded-3xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h3 className="text-2xl font-extralight text-gray-800 mb-2 font-concretica">
+                        <h3 className="text-2xl font-extralight text-gray-800 dark:text-slate-100 mb-2 font-concretica">
                           {feedback.jobTitle}
                         </h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span className="px-3 py-1 bg-gray-100 rounded-full">
+                        <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-slate-300">
+                          <span className="px-3 py-1 bg-gray-100 dark:bg-slate-800 rounded-full">
                             {feedback.difficulty}
                           </span>
                           <span>
@@ -174,7 +174,7 @@ export default function FeedbacksPage() {
                       </div>
                       <div className="text-right flex items-start gap-3">
                         <div>
-                          <div className="text-4xl font-bold text-cyan-600">
+                          <div className="text-4xl font-bold text-cyan-500">
                             {feedback.feedback.overallScore}
                           </div>
                           <div className="text-sm text-gray-600">/100</div>
@@ -191,12 +191,12 @@ export default function FeedbacksPage() {
                       </div>
                     </div>
 
-                  {/* Quick Preview */}
+                {/* Quick Preview */}
                   <div className="grid md:grid-cols-2 gap-4 mt-4">
                     {feedback.feedback.strengths && feedback.feedback.strengths.length > 0 && (
                       <div>
                         <p className="text-xs font-semibold text-green-700 mb-2">Top Strengths</p>
-                        <ul className="text-sm text-gray-700 space-y-1">
+                        <ul className="text-sm text-gray-700 dark:text-slate-200 space-y-1">
                           {feedback.feedback.strengths.slice(0, 2).map((strength, i) => (
                             <li key={i} className="flex items-start gap-1">
                               <span className="text-green-600 mt-0.5">•</span>
@@ -210,7 +210,7 @@ export default function FeedbacksPage() {
                     {feedback.feedback.weaknesses && feedback.feedback.weaknesses.length > 0 && (
                       <div>
                         <p className="text-xs font-semibold text-amber-700 mb-2">Areas to Improve</p>
-                        <ul className="text-sm text-gray-700 space-y-1">
+                        <ul className="text-sm text-gray-700 dark:text-slate-200 space-y-1">
                           {feedback.feedback.weaknesses.slice(0, 2).map((weakness, i) => (
                             <li key={i} className="flex items-start gap-1">
                               <span className="text-amber-600 mt-0.5">•</span>
@@ -222,8 +222,8 @@ export default function FeedbacksPage() {
                     )}
                   </div>
 
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <p className="text-xs text-gray-500 text-right">
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
+                      <p className="text-xs text-gray-500 dark:text-slate-400 text-right">
                         Click to view full details →
                       </p>
                     </div>

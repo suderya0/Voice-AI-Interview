@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -9,7 +10,7 @@ module.exports = {
     extend: {
       fontFamily: {
         // CSS'teki yeni isimle EŞLEŞTİRİN
-        concretica: ['SK Concretica Custom', 'system-ui', 'sans-serif'], 
+        concretica: ['SK Concretica Custom', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

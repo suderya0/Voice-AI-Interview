@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserProfile, InterviewFeedback } from '@/models/user';
 import UserMenu from '@/components/UserMenu';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -48,7 +49,7 @@ export default function Dashboard() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white dark:from-slate-900 dark:to-slate-950 flex items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
@@ -59,27 +60,30 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white dark:from-slate-900 dark:to-slate-950">
       {/* Header */}
-      <header className="bg-white/30 backdrop-blur-sm border-b border-white/20">
+      <header className="bg-white/30 dark:bg-slate-900/80 backdrop-blur-sm border-b border-white/20 dark:border-slate-800/80">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <nav className="flex items-center justify-between">
+          <nav className="flex items-center justify-between gap-4">
             {/* Logo and Brand Name */}
             <div className="flex items-center gap-2 sm:gap-3">
               <img 
                 src="/images/logo.png" 
-                alt="Intervai Logo" 
+                alt="Icareerly Logo" 
                 width={32}
                 height={32}
                 className="w-8 h-8 sm:w-12 sm:h-12"
               />
               <span className="text-xl sm:text-2xl font-extralight tracking-wide text-white font-concretica">
-                intervai
+                icareerly
               </span>
             </div>
 
-            {/* User Menu */}
-            <UserMenu user={user} profile={profile} />
+            <div className="flex items-center gap-3 sm:gap-4">
+              <ThemeToggle />
+              {/* User Menu */}
+              <UserMenu user={user} profile={profile} />
+            </div>
           </nav>
         </div>
       </header>
@@ -97,10 +101,10 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8 md:mb-12">
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8 md:mb-12 items-stretch">
           {/* Create Interview Card */}
           <Link href="/interview/create">
-            <div className="bg-white/95 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
+            <div className="bg-white/95 dark:bg-slate-900/90 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer h-full flex flex-col">
               <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
                   <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,18 +112,18 @@ export default function Dashboard() {
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-extralight text-gray-800 font-concretica">Create Interview</h2>
-                  <p className="text-gray-600 text-xs sm:text-sm">Start a new practice session</p>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-extralight text-gray-800 dark:text-slate-100 font-concretica">Create Interview</h2>
+                  <p className="text-gray-600 dark:text-slate-300 text-xs sm:text-sm">Start a new practice session</p>
                 </div>
               </div>
-              <p className="text-gray-700 mt-3 sm:mt-4 text-sm sm:text-base">
+              <p className="text-gray-700 dark:text-slate-200 mt-3 sm:mt-4 text-sm sm:text-base">
                 Create a customized interview session tailored to your job role and difficulty level.
               </p>
             </div>
           </Link>
 
           {/* Profile Stats Card */}
-          <div className="bg-white/95 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8">
+          <div className="bg-white/95 dark:bg-slate-900/90 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 h-full flex flex-col">
             <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
               <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,16 +131,16 @@ export default function Dashboard() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl md:text-2xl font-extralight text-gray-800 font-concretica">Your Stats</h2>
-                <p className="text-gray-600 text-xs sm:text-sm">Interview performance</p>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-extralight text-gray-800 dark:text-slate-100 font-concretica">Your Stats</h2>
+                <p className="text-gray-600 dark:text-slate-300 text-xs sm:text-sm">Interview performance</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
-              <div className="text-center p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+              <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-slate-800/80 rounded-lg sm:rounded-xl">
                 <p className="text-2xl sm:text-3xl font-bold text-cyan-600">{profile?.feedbacks?.length || 0}</p>
-                <p className="text-xs sm:text-sm text-gray-600 mt-1">Interviews</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-300 mt-1">Interviews</p>
               </div>
-              <div className="text-center p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+              <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-slate-800/80 rounded-lg sm:rounded-xl">
                 <p className="text-2xl sm:text-3xl font-bold text-purple-600">
                   {profile?.feedbacks && profile.feedbacks.length > 0
                     ? Math.round(
@@ -145,35 +149,35 @@ export default function Dashboard() {
                       )
                     : 0}
                 </p>
-                <p className="text-xs sm:text-sm text-gray-600 mt-1">Avg Score</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-300 mt-1">Avg Score</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Feedbacks */}
-        <div className="max-w-4xl">
-          <div className="bg-white/95 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8">
+        <div className="w-full">
+          <div className="bg-white/95 dark:bg-slate-900/90 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 flex flex-col min-h-[320px]">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-extralight text-gray-800 font-concretica">Your Feedbacks</h2>
+              <h2 className="text-xl sm:text-2xl font-extralight text-gray-800 dark:text-slate-100 font-concretica">Your Feedbacks</h2>
               {profile?.feedbacks && profile.feedbacks.length > 0 && (
                 <Link href="/feedbacks">
-                  <button className="text-xs sm:text-sm text-cyan-600 hover:text-cyan-700 font-medium transition-colors">
+                  <button className="text-xs sm:text-sm text-cyan-600 hover:text-cyan-400 font-medium transition-colors">
                     View All →
                   </button>
                 </Link>
               )}
             </div>
             {loading ? (
-              <div className="text-gray-500 text-center py-8">Loading...</div>
+              <div className="text-gray-500 dark:text-slate-400 text-center py-8">Loading...</div>
             ) : !profile?.feedbacks || profile.feedbacks.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">No feedbacks yet</p>
-                <p className="text-sm text-gray-600 mb-6">
+                <p className="text-gray-500 dark:text-slate-400 mb-4">No feedbacks yet</p>
+                <p className="text-sm text-gray-600 dark:text-slate-300 mb-6">
                   Complete an interview to receive detailed feedback on your performance.
                 </p>
                 <Link href="/interview/create">
-                  <button className="px-6 py-2 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition-colors text-sm font-medium">
+                  <button className="px-6 py-2 bg-cyan-600 text-white rounded-full hover:bg-cyan-500 transition-colors text-sm font-medium">
                     Create Interview
                   </button>
                 </Link>
@@ -182,16 +186,16 @@ export default function Dashboard() {
               <div className="space-y-4 max-h-[600px] overflow-y-auto">
                 {profile.feedbacks.slice(0, 5).map((feedback, idx) => (
                   <Link key={idx} href={`/feedbacks/${feedback.interviewId}`}>
-                    <div className="border border-gray-200 rounded-xl p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                    <div className="border border-gray-200 dark:border-slate-700 rounded-xl p-4 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <h3 className="font-semibold text-gray-800">{feedback.jobTitle}</h3>
-                          <p className="text-xs text-gray-600 mt-1">
+                          <h3 className="font-semibold text-gray-800 dark:text-slate-100">{feedback.jobTitle}</h3>
+                          <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">
                             {new Date(feedback.completedAt).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-2xl font-bold text-cyan-600">
+                          <p className="text-2xl font-bold text-cyan-500">
                             {feedback.feedback.overallScore}
                           </p>
                           <p className="text-xs text-gray-600">/100</p>
@@ -200,8 +204,8 @@ export default function Dashboard() {
                       
                       {feedback.feedback.strengths && feedback.feedback.strengths.length > 0 && (
                         <div className="mb-3">
-                          <p className="text-xs font-semibold text-green-700 mb-1">Strengths</p>
-                          <ul className="text-xs text-gray-700 space-y-1">
+                            <p className="text-xs font-semibold text-green-700 mb-1">Strengths</p>
+                          <ul className="text-xs text-gray-700 dark:text-slate-200 space-y-1">
                             {feedback.feedback.strengths.slice(0, 2).map((strength, i) => (
                               <li key={i} className="flex items-start gap-1">
                                 <span className="text-green-600 mt-0.5">•</span>
@@ -215,7 +219,7 @@ export default function Dashboard() {
                       {feedback.feedback.weaknesses && feedback.feedback.weaknesses.length > 0 && (
                         <div>
                           <p className="text-xs font-semibold text-amber-700 mb-1">Areas to Improve</p>
-                          <ul className="text-xs text-gray-700 space-y-1">
+                          <ul className="text-xs text-gray-700 dark:text-slate-200 space-y-1">
                             {feedback.feedback.weaknesses.slice(0, 2).map((weakness, i) => (
                               <li key={i} className="flex items-start gap-1">
                                 <span className="text-amber-600 mt-0.5">•</span>
@@ -226,8 +230,8 @@ export default function Dashboard() {
                         </div>
                       )}
                       
-                      <div className="mt-3 pt-3 border-t border-gray-200">
-                        <p className="text-xs text-cyan-600 text-right">Click to view details →</p>
+                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-slate-700">
+                        <p className="text-xs text-cyan-600 dark:text-cyan-400 text-right">Click to view details →</p>
                       </div>
                     </div>
                   </Link>

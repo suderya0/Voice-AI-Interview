@@ -18,7 +18,7 @@ export default function InterviewSession() {
   const [playing, setPlaying] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string>('Soruyu dinleyin ve cevaplayın.');
+  const [info, setInfo] = useState<string>('Listen to the question and answer.');
   const [liveText, setLiveText] = useState<string>('');
   const [aiCaption, setAiCaption] = useState<string>('');
 
@@ -136,7 +136,7 @@ export default function InterviewSession() {
           if (data.deepgramApiKey) {
             deepgramKeyRef.current = data.deepgramApiKey;
           }
-          setInfo('Görüşme başlıyor...');
+          setInfo('Interview is starting...');
           await playSequence(['Hello, the interview is starting.', data.question], () => {
             console.log('🎵 All audio finished, starting microphone...');
             setTimeout(() => {
@@ -159,10 +159,10 @@ export default function InterviewSession() {
       if (data.deepgramApiKey) {
         deepgramKeyRef.current = data.deepgramApiKey;
       }
-      setInfo('Görüşme başlıyor...');
-      // playSequence sonrası startLiveAnswer'ı çağırmıyoruz
-      // Çünkü mikrofon sadece ses TAMAMEN bittikten sonra açılmalı
-      // playSequence içinde son audio bittiğinde callback olarak startLiveAnswer çağrılacak
+      setInfo('Interview is starting...');
+      // We do not call startLiveAnswer immediately after playSequence
+      // Microphone should open only after all audio finishes completely
+      // startLiveAnswer is invoked in the playSequence onComplete callback
       await playSequence(['Hello, the interview is starting.', data.question], () => {
         console.log('🎵 All audio finished, starting microphone...');
         // Use setTimeout to ensure audio channel is fully released
@@ -193,7 +193,7 @@ export default function InterviewSession() {
         if (deepgramKeyRef.current) {
           // continue
         }
-        setInfo('Görüşme devam ediyor...');
+        setInfo('Interview is resuming...');
         if (q) {
           await playSequence(['Resuming the interview.', q], () => {
             console.log('🎵 Resume audio finished, starting microphone...');
@@ -210,7 +210,7 @@ export default function InterviewSession() {
           });
         }
       } else {
-        setError(err.message || 'Başlatma hatası');
+      setError(err.message || 'Start error');
       }
     } finally {
       setLoading(false);
@@ -250,7 +250,7 @@ export default function InterviewSession() {
         if (audioRef.current) {
           audioRef.current = null;
         }
-        setError(error.message || 'Ses çalma hatası');
+        setError(error.message || 'Audio playback error');
         reject(error);
       };
       
@@ -264,7 +264,7 @@ export default function InterviewSession() {
         
         const data = await res.json();
         if (!res.ok || !data.audioUrl) {
-          throw new Error(data.error || 'Ses üretilemedi');
+          throw new Error(data.error || 'Audio could not be generated');
         }
         
         // Create audio element
@@ -278,7 +278,7 @@ export default function InterviewSession() {
         
         // Handle playback errors
         audio.onerror = (e) => {
-          const error = new Error('Ses çalma hatası');
+          const error = new Error('Audio playback error');
           rejectOnce(error);
         };
         
@@ -287,11 +287,11 @@ export default function InterviewSession() {
           await audio.play();
         } catch (playError: any) {
           // Playback failed (e.g., autoplay blocked)
-          rejectOnce(new Error(playError.message || 'Ses oynatılamadı'));
+          rejectOnce(new Error(playError.message || 'Audio could not play'));
         }
       } catch (err: any) {
         // Network or other error
-        rejectOnce(err instanceof Error ? err : new Error(err.message || 'Ses üretilemedi'));
+        rejectOnce(err instanceof Error ? err : new Error(err.message || 'Audio could not be generated'));
       }
     });
   };
@@ -352,7 +352,7 @@ export default function InterviewSession() {
       
     } catch (error: any) {
       console.error('❌ Error in playSequence:', error);
-      setError(error.message || 'Ses sırası hatası');
+      setError(error.message || 'Audio sequence error');
       
       // Even on error, call onComplete to allow recovery
       safeOnComplete();
@@ -444,7 +444,7 @@ export default function InterviewSession() {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     if (!deepgramKeyRef.current) {
-      const errorMsg = 'Deepgram anahtarı alınamadı.';
+      const errorMsg = 'Deepgram key could not be retrieved.';
       console.error('❌', errorMsg);
       setError(errorMsg);
       return;
@@ -473,7 +473,7 @@ export default function InterviewSession() {
       connection.on(LiveTranscriptionEvents.Open, () => {
         console.log('✅ Deepgram connection opened - ready to receive audio');
         connectionOpenedRef.value = true;
-        setInfo('Mikrofon aktif, konuşabilirsiniz...');
+        setInfo('Microphone is active, you can speak...');
       });
 
       connection.on(LiveTranscriptionEvents.Transcript, (data: any) => {
@@ -578,7 +578,7 @@ export default function InterviewSession() {
 
       connection.on(LiveTranscriptionEvents.Error, (err: any) => {
         console.error('❌ Deepgram error:', err);
-        setError('Canlı STT hatası: ' + (err?.message || 'Bilinmeyen hata'));
+        setError('Live STT error: ' + (err?.message || 'Unknown error'));
         // Try to restart if error occurs
         setTimeout(() => {
           if (!streaming && !isStreamingRef.current && !isStoppingRef.current) {
@@ -679,13 +679,13 @@ export default function InterviewSession() {
       isStreamingRef.current = true;
       setStreaming(true);
       isStartingRef.current = false; // Clear starting flag - we're now streaming
-      setInfo('Mikrofon aktif, konuşabilirsiniz...');
+      setInfo('Microphone is active, you can speak...');
       
       console.log('✅ Microphone recording started successfully - waiting for speech...');
     } catch (err: any) {
       console.error('❌ Error starting microphone:', err);
       isStartingRef.current = false; // Clear starting flag on error
-      setError('Canlı kayıt başlatılamadı: ' + (err.message || ''));
+      setError('Live recording could not start: ' + (err.message || ''));
       stopLiveAnswer(false);
     }
   };
@@ -784,11 +784,11 @@ export default function InterviewSession() {
     // Process transcript after everything is stopped
     if (send && finalTranscriptToSend.length > 0) {
       console.log('✅ Sending answer to server:', finalTranscriptToSend);
-      setInfo('Cevap analiz ediliyor...');
+      setInfo('Analyzing your answer...');
       sendAnswer(finalTranscriptToSend);
     } else if (send) {
       console.warn('⚠️ No transcript to send, restarting...');
-      setInfo('Cevap alınamadı, tekrar dinleniyor...');
+      setInfo('No answer captured, listening again...');
       // Restart listening if no answer was captured
       setTimeout(() => {
         if (!streaming && !isStreamingRef.current && !isStoppingRef.current) {
@@ -843,7 +843,7 @@ export default function InterviewSession() {
   const sendAnswer = async (answer: string) => {
     if (!currentQuestion || !answer || answer.trim().length === 0) {
       console.log('Cannot send answer - missing question or answer');
-      setInfo('Cevap alınamadı, tekrar dinleniyor...');
+      setInfo('No answer captured, listening again...');
       setTimeout(() => {
         if (!streaming && !isStreamingRef.current && !isStoppingRef.current) {
           startLiveAnswer();
@@ -896,11 +896,11 @@ export default function InterviewSession() {
       console.log('Response from server:', data);
       
       if (!res.ok || !data.success) {
-        throw new Error(data.error || data.message || 'Yanıt işlenemedi');
+        throw new Error(data.error || data.message || 'Response could not be processed');
       }
 
       if (!data.nextQuestion) {
-        throw new Error('Sonraki soru alınamadı');
+        throw new Error('Next question could not be fetched');
       }
 
       // Save the turn
@@ -928,10 +928,10 @@ export default function InterviewSession() {
       // Update to next question
       setCurrentQuestion(data.nextQuestion);
       setAiCaption(data.nextQuestion);
-      setInfo('Yeni soru oynatılıyor...');
+      setInfo('Playing the next question...');
       
       // Play thank you message and next question
-      // Mikrofon sadece tüm sesler bittikten sonra açılmalı
+      // Microphone should open only after all audio finishes
       console.log('🎵 Starting to play next question sequence...');
       console.log('🎵 Next question:', data.nextQuestion);
       
@@ -1033,8 +1033,8 @@ export default function InterviewSession() {
     } catch (err: any) {
       console.error('❌ Error in sendAnswer:', err);
       console.error('❌ Error stack:', err.stack);
-      setError(err.message || 'Yanıt gönderme hatası');
-      setInfo('Hata oluştu, tekrar dinleniyor...');
+      setError(err.message || 'Answer submission error');
+      setInfo('An error occurred, listening again...');
       
       // Even if there's an error, try to restart listening
       // This ensures the interview can continue even if one question fails
@@ -1051,35 +1051,35 @@ export default function InterviewSession() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-400 white-700 py-10 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white dark:from-slate-900 dark:to-slate-950 py-10 px-4">
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <Link
             href={`/interview/${interviewId}`}
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm text-cyan-100 hover:text-white underline-offset-2 hover:underline"
           >
             ← Interview Details
           </Link>
-          <span className="text-sm text-gray-600">{info}</span>
+          <span className="text-sm text-gray-100">{info}</span>
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
           {/* User column */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-lg p-6 space-y-4 border border-white/40">
+          <div className="bg-white/95 dark:bg-slate-900/90 backdrop-blur-sm rounded-3xl shadow-lg p-6 space-y-4 border border-white/40 dark:border-slate-700">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white font-semibold flex items-center justify-center">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 text-white font-semibold flex items-center justify-center">
                 U
               </div>
               <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">
-                Kullanıcı
+                User
               </span>
-              {streaming && <span className="text-xs text-gray-500">Dinleniyor...</span>}
+              {streaming && <span className="text-xs text-gray-500">Listening...</span>}
             </div>
 
-            <div className="min-h-[60px] rounded-2xl bg-gray-50 border border-gray-200 p-4">
-              <p className="text-xs text-gray-500 mb-1">Altyazı (canlı)</p>
-              <p className="text-gray-800">
-                {liveText || 'Konuşmaya başlayın...'}
+            <div className="min-h-[60px] rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-4">
+              <p className="text-xs text-gray-500 dark:text-slate-300 mb-1">Captions (live)</p>
+              <p className="text-gray-800 dark:text-slate-100">
+                {liveText || 'Start speaking...'}
               </p>
             </div>
             
@@ -1094,15 +1094,15 @@ export default function InterviewSession() {
                     stopLiveAnswer(true);
                   }
                 }}
-                className="w-full px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium"
+                className="w-full px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-500 transition-colors font-medium"
               >
-                Cevabı Gönder
+                Submit Answer
               </button>
             )}
           </div>
 
           {/* AI column */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-lg p-6 space-y-4 border border-white/40">
+          <div className="bg-white/95 dark:bg-slate-900/90 backdrop-blur-sm rounded-3xl shadow-lg p-6 space-y-4 border border-white/40 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-700 text-white font-semibold flex items-center justify-center">
                 AI
@@ -1110,41 +1110,41 @@ export default function InterviewSession() {
               <span className="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">
                 AI
               </span>
-              {playing && <span className="text-xs text-gray-500">Ses oynatılıyor...</span>}
+              {playing && <span className="text-xs text-gray-500">Playing audio...</span>}
             </div>
 
             <div className="flex gap-3 flex-wrap">
-              {/* Soruyu tekrar oynatmak isterseniz yukarıdaki buton kaldırıldı; otomatik akış */}
+              {/* Replay button was removed; flow is automatic */}
             </div>
 
-            <div className="min-h-[60px] rounded-2xl bg-gray-50 border border-gray-200 p-4">
-              <p className="text-xs text-gray-500 mb-1">Altyazı (AI)</p>
-              <p className="text-gray-800">
-                {aiCaption || currentQuestion || 'Soru yükleniyor...'}
+            <div className="min-h-[60px] rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-4">
+              <p className="text-xs text-gray-500 dark:text-slate-300 mb-1">Captions (AI)</p>
+              <p className="text-gray-800 dark:text-slate-100">
+                {aiCaption || currentQuestion || 'Loading question...'}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            Diyalog Geçmişi
+        <div className="bg-white/95 dark:bg-slate-900/90 rounded-3xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4">
+            Conversation History
           </h3>
-          {turns.length === 0 ? (
-            <p className="text-sm text-gray-500">Henüz bir yanıt yok.</p>
+            {turns.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-slate-400">No answers yet.</p>
           ) : (
             <div className="space-y-4">
               {turns.map((turn, idx) => (
-                <div key={idx} className="border rounded-2xl p-4">
-                  <p className="text-sm text-gray-500 mb-2">
+                <div key={idx} className="border border-gray-200 dark:border-slate-700 rounded-2xl p-4">
+                  <p className="text-sm text-gray-500 dark:text-slate-400 mb-2">
                     Soru {idx + 1}
                   </p>
-                  <p className="text-gray-800 font-medium mb-2">
+                  <p className="text-gray-800 dark:text-slate-100 font-medium mb-2">
                     {turn.question}
                   </p>
-                  <p className="text-gray-700">
-                    <span className="text-gray-500 font-semibold mr-2">
-                      Cevap:
+                  <p className="text-gray-700 dark:text-slate-200">
+                    <span className="text-gray-500 dark:text-slate-400 font-semibold mr-2">
+                      Answer:
                     </span>
                     {turn.answer}
                   </p>
@@ -1155,7 +1155,7 @@ export default function InterviewSession() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl">
+          <div className="bg-red-50 dark:bg-red-900/40 border border-red-200 dark:border-red-500/60 text-red-700 dark:text-red-200 px-4 py-3 rounded-2xl">
             {error}
           </div>
         )}
@@ -1170,7 +1170,7 @@ export default function InterviewSession() {
                 // For demo interviews, generate feedback and redirect to demo feedback page
                 try {
                   setLoading(true);
-                  setInfo('Görüşme tamamlanıyor ve geri bildirim oluşturuluyor...');
+                  setInfo('Finishing interview and generating feedback...');
                   
                   // Stop any active recording
                   if (streaming || isStreamingRef.current) {
@@ -1241,7 +1241,7 @@ export default function InterviewSession() {
               // For real interviews, complete and generate feedback
               try {
                 setLoading(true);
-                setInfo('Görüşme tamamlanıyor ve geri bildirim oluşturuluyor...');
+                setInfo('Finishing interview and generating feedback...');
                 
                 // Stop any active recording
                 if (streaming || isStreamingRef.current) {
@@ -1264,12 +1264,12 @@ export default function InterviewSession() {
                   // Redirect to interview detail page to show feedback
                   router.push(`/interview/${interviewId}`);
                 } else {
-                  alert('Görüşme tamamlanırken bir hata oluştu: ' + data.error);
+                  alert('Error while completing the interview: ' + data.error);
                   router.push(`/interview/${interviewId}`);
                 }
               } catch (error) {
                 console.error('Error completing interview:', error);
-                alert('Görüşme tamamlanırken bir hata oluştu');
+                alert('An error occurred while completing the interview');
                 router.push(`/interview/${interviewId}`);
               } finally {
                 setLoading(false);
@@ -1278,7 +1278,7 @@ export default function InterviewSession() {
             disabled={loading}
             className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Tamamlanıyor...' : 'Görüşmeyi Bitir ve Geri Bildirim Al'}
+            {loading ? 'Finishing...' : 'Finish Interview and Get Feedback'}
           </button>
         </div>
       </div>

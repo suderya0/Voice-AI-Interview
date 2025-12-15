@@ -3,27 +3,30 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'SK Concretica Custom'; 
-    
-  src: url('/fonts/sk-concretica-trial.woff') format('woff'); 
+  font-family: 'SK Concretica Custom';
+  src: url('/fonts/sk-concretica-trial.woff') format('woff');
   font-display: swap;
 }
 
-
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
+  --foreground-rgb: 15, 23, 42; /* slate-900 */
+  --background-start-rgb: 240, 249, 255; /* sky-50 */
   --background-end-rgb: 255, 255, 255;
+}
+
+.dark {
+  --foreground-rgb: 226, 232, 240; /* slate-200 */
+  --background-start-rgb: 15, 23, 42; /* slate-900 */
+  --background-end-rgb: 15, 23, 42;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: radial-gradient(
+      circle at top,
+      rgba(var(--background-start-rgb), 0.9),
+      rgba(var(--background-end-rgb), 1)
+    );
 }
 
 @keyframes fadeIn {

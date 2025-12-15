@@ -1,15 +1,16 @@
-'use client';
+"use client";
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const faqs = [
     {
-      question: "What is intervai?",
-      answer: "intervai is an AI-powered interview practice platform that helps you prepare for job interviews in a stress-free environment. Our advanced AI interviewer adapts to your responses and provides realistic interview scenarios tailored to your chosen difficulty level."
+      question: "What is icareerly?",
+      answer: "icareerly is an AI-powered interview practice platform that helps you prepare for job interviews in a stress-free environment. Our advanced AI interviewer adapts to your responses and provides realistic interview scenarios tailored to your chosen difficulty level."
     },
     {
       question: "How does the AI interviewer work?",
@@ -41,7 +42,7 @@ export default function FAQ() {
     },
     {
       question: "Can I retake interviews?",
-      answer: "Yes! One of the key benefits of intervai is that you can practice as many times as you want. Each session is a new opportunity to improve your interview skills and build confidence."
+      answer: "Yes! One of the key benefits of icareerly is that you can practice as many times as you want. Each session is a new opportunity to improve your interview skills and build confidence."
     },
     {
       question: "How do I get started?",
@@ -54,33 +55,29 @@ export default function FAQ() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white dark:from-slate-900 dark:to-slate-950 flex flex-col">
       {/* Header */}
-      <header className="container mx-auto px-6 py-6">
-        <nav className="flex items-center justify-between">
+      <header className="backdrop-blur-md border-b border-white/10 bg-cyan-400/80 dark:bg-slate-900/80">
+        <nav className="container mx-auto px-6 py-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <img 
               src="/images/logo.png" 
-              alt="Intervai Logo" 
+              alt="icareerly Logo" 
               width={48} 
               height={48} 
             />
             <span className="text-2xl font-extralight tracking-wide text-white font-concretica">
-              intervai
+              icareerly
             </span>
           </Link>
 
-          <div className="flex items-center gap-12">
-            <Link 
-              href="#" 
-              className="text-white/90 hover:text-white text-sm font-light tracking-wide transition-colors"
-              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
-            > 
-              About
-            </Link>
+          <div className="flex items-center gap-8">
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+            </div>
             <Link 
               href="/faq" 
-              className="text-white hover:text-white text-sm font-light tracking-wide transition-colors"
+              className="text-white hover:text-white text-sm font-light tracking-wide transition-colors hidden sm:inline-block"
               style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
             >
               FAQ
@@ -102,7 +99,7 @@ export default function FAQ() {
             Frequently Asked Questions
           </h1>
           <p className="text-xl text-white/90 font-light">
-            Everything you need to know about intervai
+            Everything you need to know about icareerly
           </p>
         </div>
 
@@ -110,13 +107,13 @@ export default function FAQ() {
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="bg-white/95 rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl"
+              className="bg-white/95 dark:bg-slate-900/90 rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl"
             >
               <button
                 onClick={() => toggleFAQ(index)}
                 className="w-full px-8 py-6 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-cyan-500 rounded-2xl"
               >
-                <h3 className="text-lg font-medium text-gray-800 pr-8 font-concretica">
+                <h3 className="text-lg font-medium text-gray-800 dark:text-slate-100 pr-8 font-concretica">
                   {faq.question}
                 </h3>
                 <div className="flex-shrink-0">
@@ -143,7 +140,7 @@ export default function FAQ() {
                 }`}
               >
                 <div className="px-8 pb-6">
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-gray-600 dark:text-slate-200 leading-relaxed">
                     {faq.answer}
                   </p>
                 </div>
@@ -153,11 +150,11 @@ export default function FAQ() {
         </div>
 
         {/* Contact Section */}
-        <div className="mt-16 bg-white/95 rounded-3xl shadow-xl p-8 text-center">
-          <h2 className="text-2xl font-extralight text-gray-800 mb-4 font-concretica">
+        <div className="mt-16 bg-white/95 dark:bg-slate-900/90 rounded-3xl shadow-xl p-8 text-center">
+          <h2 className="text-2xl font-extralight text-gray-800 dark:text-slate-100 mb-3 font-concretica">
             Still have questions?
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-slate-300 mb-6">
             Can't find the answer you're looking for? Please reach out to our friendly support team.
           </p>
           <Link
@@ -167,44 +164,69 @@ export default function FAQ() {
             Contact Us
           </Link>
         </div>
+
+        {/* Get Started Section */}
+        <div className="mt-6 bg-white/95 dark:bg-slate-900/90 rounded-3xl shadow-xl p-8 text-center">
+          <h2 className="text-2xl font-extralight text-gray-800 dark:text-slate-100 mb-3 font-concretica">
+            If you're ready, let's get started.
+          </h2>
+          <p className="text-gray-600 dark:text-slate-300 mb-6">
+            Create your account or sign in to start your first AI-powered interview session.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/auth/sign-in"
+              className="px-6 py-2.5 rounded-full border border-cyan-600 text-cyan-600 hover:bg-cyan-50 text-sm font-medium transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/auth/sign-up"
+              className="px-6 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-cyan-600 text-white hover:shadow-lg text-sm font-medium transition-all"
+            >
+              Sign Up
+            </Link>
+          </div>
+        </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-white/30 backdrop-blur-sm border-t border-white/20 py-8 px-6">
+      <footer className="bg-white/30 dark:bg-transparent backdrop-blur-sm border-t border-white/20 dark:border-slate-800/60 py-6 sm:py-8 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-6">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-6">
+            <div className="col-span-2 sm:col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
                 <img 
                   src="/images/logo.png" 
-                  alt="Intervai Logo" 
-                  width={32} 
-                  height={32} 
+                  alt="Icareerly Logo" 
+                  width={28}
+                  height={28}
+                  className="w-7 h-7 sm:w-8 sm:h-8"
                 />
-                <span className="text-xl font-extralight tracking-wide text-gray-800 font-concretica">
-                  intervai
+                <span className="text-lg sm:text-xl font-extralight tracking-wide text-gray-800 dark:text-slate-100 font-concretica">
+                  icareerly  
                 </span>
               </div>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 dark:text-slate-300 text-xs sm:text-sm">
                 Stress-free simulations. Real-world impact.
               </p>
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-3 font-concretica">Platform</h4>
-              <ul className="space-y-2">
+              <h4 className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-slate-100 mb-2 sm:mb-3 font-concretica">Platform</h4>
+              <ul className="space-y-1.5 sm:space-y-2">
                 <li>
-                  <Link href="/interview/create" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="/interview/create" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     Create Interview
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="#" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     How It Works
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="#" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     Features
                   </a>
                 </li>
@@ -212,20 +234,20 @@ export default function FAQ() {
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-3 font-concretica">Support</h4>
-              <ul className="space-y-2">
+              <h4 className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-slate-100 mb-2 sm:mb-3 font-concretica">Support</h4>
+              <ul className="space-y-1.5 sm:space-y-2">
                 <li>
-                  <Link href="/faq" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="/faq" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     FAQ
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="#" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     Contact Us
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="#" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     Help Center
                   </a>
                 </li>
@@ -233,31 +255,31 @@ export default function FAQ() {
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-3 font-concretica">Account</h4>
-              <ul className="space-y-2">
+              <h4 className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-slate-100 mb-2 sm:mb-3 font-concretica">Account</h4>
+              <ul className="space-y-1.5 sm:space-y-2">
                 <li>
-                  <Link href="/auth/sign-in" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="/auth/sign-in" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     Sign In
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link href="/auth/sign-up" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+                  <a href="/auth/sign-up" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                     Sign Up
-                  </Link>
+                  </a>
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="pt-6 border-t border-white/20 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-600 text-sm">
-              © {new Date().getFullYear()} intervai. All rights reserved.
+          <div className="pt-4 sm:pt-6 border-t border-white/20 dark:border-slate-800/60 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+            <p className="text-gray-600 dark:text-slate-400 text-xs sm:text-sm text-center sm:text-left">
+              © {new Date().getFullYear()} icareerly. All rights reserved.
             </p>
-            <div className="flex gap-6">
-              <a href="#" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+            <div className="flex flex-wrap gap-4 sm:gap-6 justify-center sm:justify-end">
+              <a href="#" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                 Privacy Policy
               </a>
-              <a href="#" className="text-gray-600 hover:text-cyan-600 text-sm transition-colors">
+              <a href="#" className="text-gray-600 dark:text-slate-300 hover:text-cyan-600 text-xs sm:text-sm transition-colors">
                 Terms of Service
               </a>
             </div>
