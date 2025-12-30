@@ -12,7 +12,8 @@ export async function DELETE(
 ) {
   try {
     const interviewId = params.id;
-    const searchParams = request.nextUrl.searchParams;
+    // Use URL API instead of request.nextUrl to keep this route statically optimizable
+    const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 
     if (!userId) {

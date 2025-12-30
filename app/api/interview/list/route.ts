@@ -8,7 +8,8 @@ import { logger } from '@/utils/logger';
  */
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
+    // Use URL API instead of request.nextUrl to keep this route statically optimizable
+    const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     const status = searchParams.get('status');
     const limit = parseInt(searchParams.get('limit') || '10');

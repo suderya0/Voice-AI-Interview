@@ -25,20 +25,8 @@ export default function SignIn() {
       await signIn(formData.email, formData.password);
       router.push('/dashboard');
     } catch (err: any) {
+      setError(err.message || 'Sign in failed. Please check your credentials.');
       console.error('Sign in error:', err);
-      // Map Firebase auth errors to user-friendly messages
-      const code = err?.code as string | undefined;
-      if (
-        code === 'auth/invalid-credential' ||
-        code === 'auth/wrong-password' ||
-        code === 'auth/user-not-found'
-      ) {
-        setError('Wrong email or password');
-      } else if (code === 'auth/invalid-email') {
-        setError('Invalid email address. Please check and try again.');
-      } else {
-        setError('Sign in failed. Please check your credentials and try again.');
-      }
     } finally {
       setLoading(false);
     }

@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast, ToastContainer } from '@/components/Toast';
 
-export default function CreateInterview() {
+function CreateInterviewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
@@ -295,6 +295,18 @@ export default function CreateInterview() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function CreateInterview() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-cyan-400 to-white dark:from-slate-900 dark:to-slate-950 flex items-center justify-center">
+        <div className="text-gray-600 dark:text-slate-300">Loading...</div>
+      </div>
+    }>
+      <CreateInterviewContent />
+    </Suspense>
   );
 }
 

@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { InterviewModel } from '@/models/interview';
+import { InterviewModel, Interview } from '@/models/interview';
 import { logger } from '@/utils/logger';
 
 /**
  * POST /api/interview/create
  * Creates a new interview session
  * Supports demo mode (isDemo: true) - doesn't require userId and doesn't save to database
+ * 
+ * 
  */
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -46,18 +49,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Create interview document
-    const interview = {
+    const interview: Omit<Interview, 'id'> = {
       userId,
       jobTitle,
       jobDescription: jobDescription || '',
-      difficulty: difficulty || 'medium',
+      difficulty: (difficulty || 'medium') as 'easy' | 'medium' | 'hard',
       duration: duration || 30, // minutes
       status: 'created',
       createdAt: new Date(),
       updatedAt: new Date(),
-      feedback: null,
       transcript: [],
-      audioUrl: null,
     };
 
     // Save to database (Firestore or MongoDB)
